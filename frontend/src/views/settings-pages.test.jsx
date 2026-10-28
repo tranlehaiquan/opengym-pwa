@@ -228,8 +228,6 @@ describe('the search lands on a row', () => {
     expect(searchSettings('reminder time', web, tr).map(h => h.title)).toEqual(['Reminder time'])
     expect(searchSettings('tone', web, tr).map(h => h.title)).toContain('Nudge tone')
     expect(searchSettings('test notification', web, tr).map(h => h.title)).toEqual(['Send test notification'])
-    expect(searchSettings('server', web, tr).map(h => h.title)).toContain('Sync now')
-    expect(searchSettings('sync', web, tr).map(h => h.title)).toContain('Sync now')
     expect(searchSettings('loop', web, tr).map(h => h.title)).toContain('How you train')
     expect(searchSettings('swipe', web, tr)[0].title).toBe('Swipe actions')
     expect(searchSettings('gesture', web, tr).map(h => h.title)).toEqual(['Swipe actions'])

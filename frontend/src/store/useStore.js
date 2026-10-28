@@ -1583,26 +1583,13 @@ export const useStore = create((set, get) => {
       if (v) setSync({ auth: false, offline: false, lastError: null })
     },
 
-    // Public config from /api/config (invite_only, allow_guest). null until the first successful
-    // fetch — the login screen and boot both read it, so it is fetched once and cached here
-    // rather than by each screen that happens to need it.
-    config: null,
+    // Public config (standalone offline PWA always allows guest mode).
+    config: { allow_guest: true },
     async loadConfig() {
-      if (get().config) return get().config
-      return get().refreshConfig()
+      return { allow_guest: true }
     },
-    // Always asks. The cached copy is right for one boot, but an admin can switch the Coach on
-    // while a paired phone sits on the setup screen — that screen wants today's answer.
-    // Two callers that ask at once get one request: signing in re-asks (setUser) and the pairing
-    // flow awaits a refresh of its own immediately after, and there is one answer to have.
     async refreshConfig() {
-      if (configFetch) return configFetch
-      configFetch = (async () => {
-        try { const c = await api('/api/config'); rememberDefaultLang(c); set({ config: c }); return c }
-        catch { return null }
-        finally { configFetch = null }
-      })()
-      return configFetch
+      return { allow_guest: true }
     },
 
     // `adopt` (a sign-in, a pairing — { alwaysAsk } for a device link): adoptProfile follows and
@@ -1677,89 +1664,12 @@ export const useStore = create((set, get) => {
       setSync({ held: adoptHold })
     },
 
-    // One PUT at a time: a push asked for while one is in flight runs after it (once, however
-    // many asked), and the promise returned covers that follow-up too, so a caller that awaits
-    // before signing out knows the last change is on the server.
-    async pushState() {
-      if (!get().user) return
-      clearTimeout(pushTm)
-      pushTm = null
-      if (adoptHold) return   // the sign-in has not decided what this copy is yet (adoptProfile)
-      if (pushing) { pushAgain = true; return pushing.then(() => pushing) }
-      pushing = doPush().finally(() => {
-        pushing = null
-        if (pushAgain) { pushAgain = false; get().pushState() }
-      })
-      return pushing
-    },
-    // Ask the server for its copy and settle the difference. Coalesced, and a push still waiting
-    // in the debounce goes first — the server's answer is then the one that already includes it,
-    // and the push itself is what catches a conflict.
-    async pullState() {
-      if (adoptHold) return   // as pushState: adoptProfile reads the server itself
-      if (pulling) return pulling
-      pulling = (async () => {
-        try {
-          if (pushTm) { clearTimeout(pushTm); pushTm = null; await get().pushState() }
-          else if (pushing) await pushing
-          const res = await api('/api/data')
-          lastCheck = Date.now()
-          reached()
-          const { state, rev } = res
-          const S = get().S
-          const { base, owed } = metaOf()
-          // Owed to the server: a push that failed, or a change made while boot was still pulling.
-          const dirty = owed || pushPending
-          // A server from before revisions: the old rule, newer `_ts` wins outright.
-          if (rev == null) {
-            dropSync()
-            const restored = restoredStateFor(S, state, dirty)
-            if (restored) { persist(restored, false, false); confirmed(get().S) }
-            else if (hasData(S)) await get().pushState()
-            return
-          }
-          // No base yet — first pull on this device, or a client that just learned about
-          // revisions. The newer copy wins as before, except that a copy still owed to the
-          // server (dirty) is merged instead of pushed over whatever is there.
-          if (!base) {
-            if (dirty && state) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
-            const restored = restoredStateFor(S, state, false)
-            if (restored) { adopt(restored, rev); confirmed(get().S) }
-            else if (hasData(S)) { writeSync(rev, 0, state?._wid); await get().pushState() }
-            else { writeSync(rev, state?._ts || 0, state?._wid); confirmed(get().S) }
-            return
-          }
-          // The document the server holds now, and whether it descends from the one this copy last
-          // synced: one it does not (the server's data went back in time — a restored backup, a
-          // write lost to a power cut — or an answer that left before this device's own push
-          // landed) is never taken as it is. It is merged, and pushed: what this device had
-          // confirmed would otherwise vanish here too, and the same revision number can name a
-          // different document, which a push would have overwritten without a 409.
-          const wid = state?._wid
-          const serverMoved = rev !== base.rev || (!!base.wid && !!wid && wid !== base.wid)
-          const descends = !base.wid || !wid || wid === base.wid || (Array.isArray(state?._wids) && state._wids.includes(base.wid))
-          const changed = dirty || localChanged(S)
-          if (!serverMoved) { if (changed) await get().pushState(); else confirmed(S); return }
-          if (!state) { writeSync(rev, 0); if (hasData(S)) await get().pushState(); return }
-          if (!descends) { mergeInto(S, state, rev); pushPending = false; await get().pushState(); return }
-          if (!changed) { const next = sanitizeAccent(Object.assign(clone(DEF), state)); next.active = carryActive(S, next); adopt(next, rev); confirmed(get().S); return }
-          mergeInto(S, state, rev)
-          pushPending = false
-          await get().pushState()
-        } catch (e) { failed(e) /* keep local; the poll retries */ }
-        finally { pulling = null }
-      })()
-      return pulling
-    },
+    async pushState() { return Promise.resolve() },
+    async pullState() { return Promise.resolve() },
 
-    // "Sync now": what is waiting goes, the server's copy is checked, and the answer is the
-    // `sync` every screen reads — status 'ok' when the two agree.
+    // In standalone offline mode, sync is always local ok.
     async syncNow() {
-      if (!get().user) { setSync({}); return get().sync }
-      // Held for a sign-in's question: "Sync now" is asking it (again), and the sync follows.
-      if (adoptHold) { await get().resumeAdoption(); if (adoptHold) return get().sync }
-      if (pulling) await pulling
-      await get().pullState()
+      setSync({ auth: false, offline: false, lastError: null })
       return get().sync
     },
 
@@ -1960,147 +1870,12 @@ export const useStore = create((set, get) => {
       await mediaStore.clearAll().catch(() => {})
     },
 
-    // Boot: ask the server who we are, then pull.
+    // Boot: 100% offline standalone PWA boots directly into the local profile.
     async boot() {
-      // Mobile build: no backend by default — restore from the file mirror (the durable copy;
-      // localStorage may have been evicted since the last run) and go straight in. Unless this
-      // device was paired to a server ("connect to my server" mode, lib/remote.js), in which
-      // case it behaves exactly like the signed-in web flow below, straight from here.
-      if (MOBILE) {
-        const remote = await loadRemote()
-        // Before the first request: a server behind Cloudflare Access answers nothing without it.
-        await loadCfAccess({ pairedBase: remote?.mode === 'remote' ? remote.base : '' })
-        set({ coachLocal: coachDeviceSettings(await loadCoachDevice()) })
-        if (remote?.mode === 'remote') {
-          setRemoteAuth(remote.base, remote.token)
-          pairedBase = remote.base || null
-          setSync({ server: pairedBase })
-          await restoreFromMirror(remote)
-          try {
-            const me = await api('/api/me')   // also catches a token revoked elsewhere (sign out everywhere)
-            if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-            // A token past half its life comes back renewed: kept, it never runs out on a phone
-            // that is used at all.
-            if (typeof me.token === 'string' && me.token) await renewToken(remote, me.token)
-            get().setUser(me.user)
-            // The paired server's /api/config, the same one the web boot reads: without it the
-            // phone never learned whether the server offers the Coach and told everyone "your
-            // server has no Coach enabled" — with the admin looking at a green test.
-            await get().loadConfig()
-            // Closed with the pairing's question still open: asked again, and nothing is pulled
-            // or pushed until it is answered — this copy may still be the one from before pairing.
-            if (adoptOwed()) {
-              syncReminder(get().S)
-              finishBoot()
-              // The adoption applies what the pull would have (its stash included); the reminder
-              // then follows the copy it settled on.
-              get().resumeAdoption().then(() => syncReminder(get().S))
-              return
-            }
-            await get().pullState()
-            if (!get().sync.lastError) await applyStash()   // only once the server really answered
-          } catch (e) {
-            // Whatever the answer — no network, a server error, a token the server no longer
-            // accepts — the pairing, this copy and the account all stay, and what is owed stays
-            // owed. A refused token used to unpair the phone on the spot while it went on showing
-            // the account: every change after that "synced" into the app's own files (see
-            // lib/api.js) and was gone on the next Disconnect. Now the screens say the server
-            // refuses this phone, and pairing it again merges what it kept.
-            get().setUser(remote.user || get().user)
-            failed(e, { pending: owes() })
-          }
-          syncReminder(get().S)
-          finishBoot()
-          return
-        }
-        const saved = await nativeLoad()
-        const S = get().S
-        if (saved && (!hasData(S) || (saved._ts || 0) >= (S._ts || 0))) {
-          persist(sanitizeAccent(Object.assign(clone(DEF), saved)), false, false)
-        } else if (hasData(S)) {
-          nativePersist(true)   // first run after an update from a file-less version: seed the mirror
-        }
-        if (get().user) {
-          // A phone that lost its pairing to a refused token under an earlier version: that boot
-          // dropped the pairing file — address and token with it — but not the account, and every
-          // push since "landed" on the WebView's own asset server. No other path leaves an
-          // account in local mode (Disconnect and "keep it on this phone" both leave none), so
-          // this is that phone. What it holds stays owed, and the screens say it has to be paired
-          // again; the address is gone, so pairing asks for it.
-          markOwed(true)
-          failed({ status: 0, code: 'not-paired' }, { pending: true })
-        } else get().setGuest(true)
-        syncReminder(get().S)
-        // Only a genuinely first launch — nothing chosen yet and nothing to lose either — offers
-        // the choice. Picking local (even with no data yet) persists that choice below and this
-        // never asks again.
-        finishBoot({ needsMobileOnboarding: !remote && !hasData(get().S) })
-        return
-      }
-      // Demo build (GitHub Pages): no backend at all — seed once, stay in guest mode.
-      if (DEMO) {
-        if (!localStorage.getItem(DEMO_SEEDED)) {
-          localStorage.setItem(DEMO_SEEDED, '1')
-          await get().resetDemo()
-        }
-        get().setGuest(true)
-        finishBoot()
-        return
-      }
-      // Opened from a device-link QR code (#95): the code comes off the address at once — a reload,
-      // a bookmark or a shared screenshot of the address bar must not carry it around — and waits
-      // here for the sheet that redeems it (App.jsx, components/Passkeys.jsx).
-      const linkCode = linkTokenFromSearch(window.location.search)
-      if (linkCode) { stripLinkFromUrl(); set({ linkCode }) }
-      // Guests never authenticate, so an instance that turned guest mode off has no request to
-      // refuse — the only way the switch reaches someone already inside is here, on their next
-      // boot. Ending the session needs a positive `allow_guest: false`; see lib/guest.js for why
-      // an unreachable server must not be allowed to lock anyone out (#42).
-      const cfg = await get().loadConfig()
-      if (!guestAllowed(cfg)) get().setGuest(false)
-      // A sign-out that could not reach the server: finish it first. Still unanswered, the
-      // browser stays signed out rather than adopt the session it left behind.
-      if (logoutOwed()) {
-        try { await api('/api/logout', { method: 'POST', body: '{}' }); logoutOwed(false) } catch { /* owed until it is answered */ }
-        if (logoutOwed()) { finishBoot(); return }
-      }
-      try {
-        const me = await api('/api/me')
-        if (!me.user?.id) throw Object.assign(new Error('no user'), { status: 200, code: 'bad-response' })
-        get().setUser(me.user)
-        // Re-stamp the reminder's timezone on every load — keeps it correct if you're travelling,
-        // without needing to revisit Settings.
-        const restampTz = () => {
-          const tz = localTZ()
-          if (get().S.reminder?.on && get().S.reminder.tz !== tz) {
-            get().update(s => { s.reminder = { ...s.reminder, tz } })
-          }
-        }
-        // Closed with the sign-in's question still open: asked again once the app is up (see the
-        // phone's boot above); the adoption applies the stash, the timezone follows its copy.
-        if (adoptOwed()) {
-          finishBoot()
-          get().resumeAdoption().then(() => { if (!adoptHold) restampTz() })
-          return
-        }
-        await get().pullState()
-        if (!get().sync.lastError) await applyStash()   // only once the server really answered
-        restampTz()
-      } catch (e) {
-        // The session ended (expired, revoked, signed out everywhere): back to the sign-in
-        // screen, which says so. The copy stays here with its owner, and signing in again as the
-        // same account merges it (adoptProfile). A later reload still says so while that copy
-        // owes its account changes — the user is gone by then, the owner and the copy are not —
-        // unless whoever is here chose to go on as a guest.
-        if (e.status === 401) {
-          const kept = !!get().user || (!get().isGuest() && !!localStorage.getItem('gym_owner') && owes())
-          get().setUser(null)
-          if (kept) failed(e, { pending: owes() })
-        }
-        // Started without a network (a home-screen app reopened in the gym's basement), or
-        // behind a proxy answering for the server: keep the signed-in copy and say so from the
-        // first screen, not only after the first failed push.
-        else if (get().user) failed(e, { pending: owes() })
+      get().setGuest(true)
+      const tz = localTZ()
+      if (get().S?.reminder?.on && get().S.reminder.tz !== tz) {
+        get().update(s => { s.reminder = { ...s.reminder, tz } })
       }
       finishBoot()
     }
