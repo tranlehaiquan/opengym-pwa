@@ -21,7 +21,7 @@
 
 - [x] 4.1 Update frontend build scripts in `frontend/package.json` to stage catalogue media into `dist/exercise-media` automatically during `npm run build`
 - [x] 4.2 Verify Service Worker (`sw.js`) and PWA manifest correctly cache application assets and run fully offline
-- [ ] 4.3 Run test suite (`npm run test`) and production build (`npm run build`) in `frontend` to verify a clean, error-free standalone bundle
+- [x] 4.3 Run test suite (`npm run test`) and production build (`npm run build`) in `frontend` to verify a clean, error-free standalone bundle
 
 ## Workflow follow-up
 
