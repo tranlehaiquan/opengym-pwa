@@ -8,6 +8,11 @@ services:
     image: opengym:latest
     container_name: opengym
     restart: unless-stopped
-    ports:
-      - "${PORT:-8080}:80"
+    # Host port mapping is omitted so Dokploy routes traffic via Traefik without host port conflicts
+    networks:
+      - dokploy-network
+      - default
 
+networks:
+  dokploy-network:
+    external: true
