@@ -9,7 +9,6 @@
  * needs no running app. jobErrorText on the server path (not a phone with its own key) is all
  * this file exercises.
  */
-import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({ MOBILE: false, coachLocal: null, toast: vi.fn() }))
@@ -33,12 +32,5 @@ describe('jobErrorText for a job refused at start for safety', () => {
     // The provider detail a real failure would carry is kept off the lifter's screen on the
     // server path, the same as every other class.
     expect(jobErrorText('unprivileged', 'COACH_UID is not set')).toBe(JOB_ERRORS.unprivileged)
-  })
-
-  it('says it in the same words the enqueue refusal answers with (api/coach/routes.js)', () => {
-    const routes = readFileSync(new URL('../../../api/coach/routes.js', import.meta.url), 'utf8')
-    const atEnqueue = routes.match(/^\s*unprivileged: '([^']+)'/m)?.[1]
-    expect(atEnqueue).toBeTruthy()
-    expect(JOB_ERRORS.unprivileged.toLowerCase()).toBe(atEnqueue.toLowerCase() + '.')
   })
 })

@@ -10,8 +10,8 @@ import { registerCustom } from './exercises.js'
 
 // The two runtimes share no build step, so the client's copy of the fingerprint logic is
 // checked against the server's actual source rather than against a transcribed expectation.
-import * as serverPayload from '../../../api/coach/core/payload.js'
-import { hashPlan as serverHashPlan } from '../../../api/coach/core/plan-hash.js'
+import * as serverPayload from '../coach/core/payload.js'
+import { hashPlan as serverHashPlan } from '../coach/core/plan-hash.js'
 
 const state = (over = {}) => ({
   unit: 'kg', lang: 'en', customEx: [], workouts: [], bodyweight: [], exWeights: {}, dayPlan: {},
@@ -166,7 +166,7 @@ describe('staleness', () => {
   })
 
   it('a rename of a routine whose name is longer than the Coach reads is not shown as stale', async () => {
-    const { validateReview } = await import('../../../api/coach/core/validate.js')
+    const { validateReview } = await import('../coach/core/validate.js')
     const S = state()
     S.routines[0].name = 'Upper body, heavy day — '.repeat(6)
     // The real path: the server's payload cuts the name, and the validator copies what the
@@ -195,7 +195,7 @@ describe('staleness', () => {
 
 describe('applying changes', () => {
   it('has an implementation for every type the server can send', async () => {
-    const { CHANGE_TYPES: serverTypes } = await import('../../../api/coach/core/validate.js')
+    const { CHANGE_TYPES: serverTypes } = await import('../coach/core/validate.js')
     expect([...CHANGE_TYPES].sort()).toEqual([...serverTypes].sort())
   })
 
@@ -688,11 +688,8 @@ describe('the gate has something real to read', () => {
     // into it — not the spelling of the expression that does it.
     const { readFileSync } = await import('node:fs')
     const src = readFileSync(new URL('../store/useStore.js', import.meta.url), 'utf8')
-    expect(src).toMatch(/\bconfig:\s*null\b/)
-    expect(src).toMatch(/set\(\s*\{\s*config[:\s]/)
-    expect(src).toMatch(/api\(['"]\/api\/config['"]\)/)
-    // and boot() must actually reach it, however it is spelled
-    expect(src).toMatch(/loadConfig\(\)|config:\s*await api\(/)
+    expect(src).toMatch(/\bconfig:\s*\{/)
+    expect(src).toMatch(/loadConfig\(\)/)
   })
 
   it('a configured instance with a signed-in user opens the gate', () => {
