@@ -1,0 +1,13 @@
+name: opengym
+
+services:
+  opengym:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: opengym:latest
+    container_name: opengym
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:80"
+

@@ -1,7 +1,14 @@
 **/node_modules
-frontend/dist
+dist
+**/dist
 media
 data
 .env
 .git
+.github
 *.log
+ios
+android
+frontend/ios
+frontend/android
+openspec
