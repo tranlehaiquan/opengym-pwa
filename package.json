@@ -2,11 +2,12 @@
   "name": "opengym",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@12.16.1",
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
-    "build": "npm --prefix frontend run build",
-    "preview": "npm --prefix frontend run preview",
-    "test": "npm --prefix frontend run test"
+    "dev": "pnpm --filter opengym-frontend dev",
+    "build": "pnpm --filter opengym-frontend build",
+    "preview": "pnpm --filter opengym-frontend preview",
+    "test": "pnpm --filter opengym-frontend test"
   },
   "devDependencies": {
     "js-yaml": "^4.1.0"
