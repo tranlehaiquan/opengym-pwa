@@ -7,6 +7,7 @@
     "dev": "pnpm --filter opengym-frontend dev",
     "build": "pnpm --filter opengym-frontend build",
     "preview": "pnpm --filter opengym-frontend preview",
+    "typecheck": "pnpm --filter opengym-frontend typecheck",
     "test": "pnpm --filter opengym-frontend test"
   },
   "devDependencies": {
