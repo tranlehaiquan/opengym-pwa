@@ -21,11 +21,15 @@
  * phone under Vite, and neither `fs.readFileSync` nor a `?raw` import works in both. A plain
  * ES module does. The .md files stay the thing you edit.
  */
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
+if (!existsSync(join(root, 'api'))) {
+  console.log('Skipping coach assets build: api directory does not exist.');
+  process.exit(0);
+}
 const core = join(root, 'api', 'coach', 'core');
 const check = process.argv.includes('--check');
 

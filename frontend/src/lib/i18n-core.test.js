@@ -101,6 +101,20 @@ describe('de-CH as a selectable language', () => {
   })
 })
 
+describe('vi as a selectable language', () => {
+  it('is offered in the picker and formats dates vi-VN style', () => {
+    expect(LANGS.vi).toBe('Tiếng Việt')
+    expect(DATE_LOCALES.vi).toBe('vi-VN')
+  })
+
+  it('stays the active language when selected', () => {
+    _setLangState('vi', {}, null, null)
+    expect(getLang()).toBe('vi')
+    expect(dateLocale()).toBe('vi-VN')
+    _setLangState('en', {}, null, null)
+  })
+})
+
 // EXDB stores English names lower-case and the UI title-cases them with CSS. German brings its
 // own casing, and applying capitalize on top of it produced "Bankdrücken Mit Langhantel". The
 // other packs are stored lower-case like EXDB, and without the class they read all lower-case.
