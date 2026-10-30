@@ -121,7 +121,7 @@ export default function CoachChat() {
 
   if (!ready) return null
   const coach = S.coach || emptyCoach()
-  const community = !!config?.coach?.community && !DEMO && !(MOBILE && coachMode === 'byok')
+  const community = !!config?.coach?.community && !DEMO && coachMode !== 'byok'
 
   const send = async () => {
     const msg = text.trim()
@@ -783,7 +783,7 @@ function CadenceSheet({ update }) {
   const mode = !cadence ? 'off' : cadence.weekly ? 'weekly' : 'every'
   // A phone with its own key runs them itself, and only while the app is open (lib/coach-schedule.js).
   const deviceMode = useStore(s => s.coachLocal?.mode)
-  const onPhone = MOBILE && deviceMode === 'byok'
+  const onPhone = deviceMode === 'byok'
   // Automatic reviews send your training while nobody is looking, so switching them on is where
   // the data-sharing question is asked for them. "Not now" leaves them off.
   const setMode = async m => {

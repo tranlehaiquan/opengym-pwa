@@ -9,9 +9,11 @@
 //
 // This module is intentionally light. The setup screen imports it before the user has chosen
 // anything, and the promise there is that nothing AI-shaped loads until they do.
-import { readJsonFile, writeJsonFile } from './mobile.js'
+import { MOBILE, readJsonFile, writeJsonFile } from './mobile.js'
 
 const FILE = 'opengym-coach.json'
+const KEY = 'gym_coach_device'
+const readLocal = () => { try { return JSON.parse(localStorage.getItem(KEY)) } catch { return null } }
 
 export const COACH_MODES = ['off', 'server', 'byok']
 
@@ -43,7 +45,7 @@ export const coachLimits = d => {
 let cache = null
 export async function loadCoachDevice() {
   if (cache) return cache
-  const saved = await readJsonFile(FILE)
+  const saved = (MOBILE && await readJsonFile(FILE)) || readLocal()
   cache = { ...DEFAULTS, ...(saved && typeof saved === 'object' ? saved : {}) }
   if (!COACH_MODES.includes(cache.mode)) cache.mode = 'off'
   return cache
@@ -55,11 +57,15 @@ export async function saveCoachDevice(patch) {
   // behind: the stored object is always the clamped one, merged with whatever was there before.
   if (patch && patch.limits) next.limits = coachLimits({ limits: { ...coachLimits(cur), ...patch.limits } })
   cache = next
-  await writeJsonFile(FILE, next)
+  try { localStorage.setItem(KEY, JSON.stringify(next)) } catch { /* memory still has it */ }
+  if (MOBILE) await writeJsonFile(FILE, next)
   return next
 }
 /** The part of it a UI may show: never the pending proposal, never the handle. */
 export const coachDeviceSettings = d => d ? { mode: d.mode, provider: d.provider, model: d.model, baseUrl: d.baseUrl, limits: coachLimits(d) } : null
 
 // Test seam.
-export function _resetCoachDevice() { cache = null }
+export function _resetCoachDevice() {
+  cache = null
+  try { localStorage.removeItem(KEY) } catch { /* ignore */ }
+}

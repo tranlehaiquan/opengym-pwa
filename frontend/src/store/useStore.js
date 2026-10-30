@@ -523,8 +523,11 @@ export const useStore = create((set, get) => {
   }
 
   initReminderSync(() => get().S)
-  // A phone with its own Coach key runs its automatic reviews itself, while the app is open.
+  // A phone or browser with its own Coach key runs its automatic reviews itself, while the app is open.
   initCoachSchedule(() => get())
+  loadCoachDevice().then(d => {
+    if (d && d.mode !== 'off') set({ coachLocal: coachDeviceSettings(d) })
+  }).catch(() => {})
   // What it reads back from the health hub (heart rate, weigh-ins) goes in as any change does.
   initHealthSync(() => get().S, fn => get().update(fn))
 
@@ -1383,7 +1386,13 @@ export const useStore = create((set, get) => {
     linkCode: null,
     // Mobile build only: how the Coach runs on this phone — { mode: 'off'|'server'|'byok',
     // provider, model, baseUrl } from lib/coach-device.js. Never the key, never a proposal.
-    coachLocal: null,
+    coachLocal: (() => {
+      try {
+        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('gym_coach_device') : null
+        const d = raw ? JSON.parse(raw) : null
+        return d && d.mode !== 'off' ? coachDeviceSettings(d) : null
+      } catch { return null }
+    })(),
     async setCoachLocal(patch) {
       set({ coachLocal: coachDeviceSettings(await saveCoachDevice(patch)) })
     },
