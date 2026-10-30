@@ -91,8 +91,8 @@ describe('the root', () => {
     mount()
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Guest')
     expect(host.querySelector('.sp-acct .lrow-s').textContent).toBe('Your data lives on this device. Sign in to sync.')
-    // a guest in a browser has no reminders (no push server) and no Coach page (the server's Coach)
-    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'Data & backup', 'About & updates'])
+    // a guest in a browser has no reminders (no push server), and has client AI Coach
+    expect(titles()).toEqual(['Guest', 'Workout', 'Timer alerts', 'Plan & schedule', 'Units & language', 'Equipment', 'Look & Home', 'AI Coach', 'Data & backup', 'About & updates'])
     expect(rowTitled('Workout').querySelector('.lrow-v').textContent).toBe('1:30 rest · Cards')
     expect(rowTitled('Timer alerts').querySelector('.lrow-v').textContent).toBe('Sound · Vibrate')
     expect(rowTitled('Plan & schedule').querySelector('.lrow-v').textContent).toMatch(/^Fixed Week · Mon/)
@@ -130,7 +130,7 @@ describe('the root', () => {
     mocks.user = { id: 'u1', name: 'Dana' }
     mount()
     expect(titles()).toContain('Reminders')
-    expect(titles()).not.toContain('AI Coach')
+    expect(titles()).toContain('AI Coach')
     expect(host.querySelector('.sp-acct .lrow-t').textContent).toBe('Dana')
     expect(host.querySelector('.sp-avatar').textContent).toBe('D')
     mocks.user = null
@@ -150,17 +150,18 @@ describe('the root', () => {
     expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
   })
 
-  it('shows the Coach row in standalone PWA or when client BYOK is configured', () => {
+  it('shows the Coach row across web, standalone PWA and mobile', () => {
     expect(pageVisible('coach', { mobile: false, standalone: true })).toBe(true)
     expect(pageVisible('coach', { mobile: false, coachLocal: { mode: 'byok' } })).toBe(true)
-    expect(pageVisible('coach', { mobile: false, standalone: false })).toBe(false)
+    expect(pageVisible('coach', { mobile: false, standalone: false })).toBe(true)
   })
 
   it('in a hosted app, an admin gets the Coach row too, straight to the Coach card of the admin dashboard', () => {
     mocks.config = { coach: { enabled: true } }
     mocks.user = { id: 'u1', name: 'Dana' }
     mount()
-    expect(titles()).not.toContain('AI Coach')
+    expect(titles()).toContain('AI Coach')
+    expect(rowTitled('AI Coach').textContent).not.toContain('Admin')
     mocks.user = { id: 'u1', name: 'Dana', admin: true }
     mount()
     expect(rowTitled('AI Coach').textContent).toContain('Admin')
@@ -171,13 +172,13 @@ describe('the root', () => {
   it('only while the server offers the Coach, so the row never leads to an admin page without it (#683)', () => {
     mocks.user = { id: 'u1', name: 'Dana', admin: true }
     mount()
-    expect(titles()).not.toContain('AI Coach')
+    expect(rowTitled('AI Coach').textContent).not.toContain('Admin')
     mocks.config = { coach: null }
     mount()
-    expect(titles()).not.toContain('AI Coach')
+    expect(rowTitled('AI Coach').textContent).not.toContain('Admin')
     mocks.config = { coach: { enabled: true } }
     mount()
-    expect(titles()).toContain('AI Coach')
+    expect(rowTitled('AI Coach').textContent).toContain('Admin')
   })
 
   it('searches every setting and a hit goes to its page with the row to flash', () => {
@@ -442,7 +443,7 @@ describe('searchSettings', () => {
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true }, tr)).toEqual([])   // the reminder is off
     expect(searchSettings('nudge', { ...guestWeb, user: { id: 'u' }, pushOK: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
     expect(searchSettings('nudge', { ...guestWeb, mobile: true, reminderOn: true }, tr).map(h => h.title)).toEqual(['Nudge me when I skip a planned workout'])
-    expect(searchSettings('coach', guestWeb, tr)).toEqual([])
+    expect(searchSettings('coach', guestWeb, tr)[0].page).toBe('coach')
     expect(searchSettings('coach', { ...guestWeb, mobile: true }, tr)[0].page).toBe('coach')
     expect(searchSettings('vibrate silent', { ...guestWeb, mobile: true, android: true }, tr).map(h => h.title)).toEqual(['Vibrate on silent too'])
     expect(searchSettings('   ', guestWeb, tr)).toEqual([])
