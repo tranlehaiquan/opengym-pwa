@@ -21,4 +21,4 @@
 ## 4. Localization and Full Test Suite Verification
 
 - [x] 4.1 Add or update client API key configuration strings in `frontend/src/locales/en.json` and `frontend/src/locales/vi.json`
-- [ ] 4.2 Run all unit and component tests (`pnpm test`) across settings, coach, and local pipeline to confirm zero regressions
+- [x] 4.2 Run all unit and component tests (`pnpm test`) across settings, coach, and local pipeline to confirm zero regressions

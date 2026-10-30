@@ -1073,7 +1073,7 @@ function SettingsRoot({ ctx, preview, open, user, sync, home, go, entryKey }) {
           {/* The phone app sets up its own Coach on the Coach page beside Look; in a hosted app the
               Coach is the server's, set up by an admin on the admin dashboard. Its admins get the
               same row, in the same place, straight to that card; nobody else has anything to set. */}
-          {g[0] === 'look' && adminCoach && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
+          {g[0] === 'look' && adminCoach && !g.includes('coach') && <Row icon={PAGES.coach.icon} iconTint={PAGES.coach.tint} title={t(PAGES.coach.title)}
             value={t('Admin')} accessory="chevron" onClick={() => nav('/admin', { state: { section: 'coach' } })} className="sp-root-row" />}
         </Section>
       ))}
