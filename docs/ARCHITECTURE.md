@@ -20,11 +20,21 @@ flowchart LR
     WG[Widgets and<br/>Live Activity]
   end
 
+  subgraph ClientOffline["Client Storage & LLM (Standalone / BYOK)"]
+    IDB[("IndexedDB<br/>routines, logs, media")]
+    AI["AI provider<br/>(optional Coach)"]
+  end
+
   subgraph Server["Your server (docker compose)"]
     N["web: nginx<br/>app files, 180 px media"]
     API["api: node:http<br/>server.js"]
     D[("./data<br/>db.json, state-&lt;user&gt;.json,<br/>uploads/, audit.log")]
   end
+
+  B -.offline state.-> IDB
+  B -.client Coach.-> AI
+  I -.on-device Coach.-> AI
+  A -.on-device Coach.-> AI
 
   B -- HTTPS, cookie --> N
   A -- HTTPS, bearer token --> N
@@ -35,30 +45,29 @@ flowchart LR
   I -- App Group snapshot --> WG
 
   MCP["mcp/ (optional)<br/>stdio, reads data, logs via API"] -.reads.-> D
-  AI["AI provider<br/>(optional Coach)"]
   API -.Coach jobs.-> AI
-  I -.on-device Coach.-> AI
-  A -.on-device Coach.-> AI
 ```
 
-The phone apps also work with no server at all. Then the phone is the account and the state lives
-in a file in the app's private storage (MOBILE.md explains the modes).
+The app also works with no server at all: either as a 100% offline standalone Progressive Web App (PWA)
+in your browser using IndexedDB for persistence, or as phone apps where the phone is the account and the state
+lives in private storage ([MOBILE.md](MOBILE.md) explains the mobile modes).
 
 ## The repository
 
 | Path | What lives there |
 |---|---|
-| `frontend/src/` | The app. `App.jsx` routes to `views/` (one file per screen), `sheets.jsx` holds the bottom sheets, `components/` the shared UI, `store/` the two Zustand stores, `lib/` the logic |
-| `frontend/src/lib/` | Pure helpers, each with a `*.test.js` beside it: progression, 1RM, recovery, sync merge, imports, media, the native bridges |
-| `frontend/src/locales/` | One pack per language. The key is the English text, English itself has no pack |
+| `frontend/src/` | The app written in TypeScript and React 19. `App.tsx` routes to `views/` (one file per screen), `sheets.tsx` holds the bottom sheets, `components/` the shared UI, `store/` the two Zustand stores, `lib/` the logic |
+| `frontend/src/lib/` | Pure helpers, each with tests beside it: progression, 1RM, recovery, sync merge, imports, media, client-side LLM execution, native bridges |
+| `frontend/src/locales/` | One JSON dictionary per language loaded on-demand by the i18next engine (`*.json`), with parity validation via `scripts/check-locales.mjs` |
 | `frontend/src/{instr,exercise-names,exercise-desc}/`, `lib/exercises-data.js` | Generated from `catalogue/` by `scripts/catalogue/build.mjs`. Don't edit by hand |
 | `frontend/android/`, `frontend/ios/` | The Capacitor shells and the native plugins (rest alarm, Health Connect, Apple Health, watch, widgets, animation packs) |
 | `api/` | `server.js` (routes, sessions, storage), plus small modules split out so they can be tested alone: `media.js`, `sync-stamps.js`, `queue.js`, `nudge.js`, `rate-limit.js`, `durable.js`, `password.js`, `passkeys-store.js`, `device-link.js` |
-| `api/coach/` | The optional AI Coach. `core/` has no server state and is shared with the phone apps |
+| `api/coach/` | The optional AI Coach. `core/` has no server state and is shared with client apps |
 | `web/` | The nginx image: builds the frontend, adds `catalogue/media`, proxies `/api` |
 | `catalogue/` | The exercise database: one JSON per exercise, translations, the licensed 180 px media |
 | `mcp/` | Optional MCP server for AI clients: reads the data folder, `log_workout` saves through the API |
 | `scripts/` | Build and release helpers, see [scripts/README.md](../scripts/README.md) |
+| `turbo.json` | Turborepo pipeline configuration for workspace build and development task orchestration |
 | `website/` | opengym.ch, plain HTML |
 | `helm/`, `kubernetes/`, `contrib/nix/` | Other ways to deploy |
 

@@ -32,12 +32,13 @@
 ## Why openGym
 
 Most workout apps keep your data on their servers, push you towards a subscription, or vanish
-when the company does. openGym runs on your own box, keeps your data in a folder you control, and
-is yours to fork. It still behaves like a modern app: installable on the home screen, passkey
-sign-in, works offline, syncs between your phone and your laptop.
+when the company does. openGym runs on your own box or directly in your browser as a 100% offline
+standalone Progressive Web App (PWA) with client-side IndexedDB storage, keeps your data in a
+folder or local storage you control, and is yours to fork. It still behaves like a modern app:
+installable on the home screen, passkey sign-in, works offline, syncs between your phone and your laptop.
 
-No account on someone else's server, no subscription, no ads, no telemetry. One
-`docker compose up` and it's running.
+No account on someone else's server, no subscription, no ads, no telemetry. Use it standalone in
+your browser or run one `docker compose up` to host your own instance.
 
 The [in-browser demo](https://opengym.ch/demo/) is the real app with example data,
 if you want to try it before installing anything.
@@ -104,8 +105,9 @@ if you want to try it before installing anything.
   everything as one JSON file, or your workouts and body data as a spreadsheet (CSV).
 - Share a plan as a small file or print it as a PDF.
 - Optional admin dashboard with invite-only signup and an activity log.
-- 20 languages, including right-to-left Arabic and Traditional Chinese. Exercise names and
-  instructions are translated for most of them.
+- 21+ languages, including Vietnamese ("Tiếng Việt"), right-to-left Arabic, and Traditional
+  Chinese, powered by a standardized i18next runtime engine with on-demand chunk loading.
+  Exercise names and instructions are translated for most of them.
 
 **On the phone and the wrist**
 
@@ -124,14 +126,21 @@ if you want to try it before installing anything.
 
 - An [AI coach](docs/AI_COACH.md) that drafts a week of routines and later suggests changes based on
   what you logged, and answers questions about your training. You approve every change. It runs
-  on your server, or on the phone alone, with your own provider key (Anthropic, OpenAI, Gemini or
-  any OpenAI-compatible endpoint, Ollama included).
+  directly in your browser or standalone PWA via client-side fetch, on the phone alone, or on your
+  server, using your own provider key (Anthropic, OpenAI, Google Gemini, or any OpenAI-compatible
+  endpoint, Ollama included) with persistent client storage and data privacy consent.
 - An [MCP server](mcp/README.md) so an assistant like Claude Desktop can answer questions about your
   training history, and log a workout you describe to it. Local; not part of the Docker build.
 
 The full list of what changed release by release is in the [changelog](CHANGELOG.md).
 
 ## Quick start
+
+### Option 1: Standalone offline PWA (zero server setup)
+
+Install or run openGym directly in your browser as a Progressive Web App (PWA). All routines, logs, and custom exercise media are saved locally in your browser via IndexedDB. It works 100% offline without needing a server, Docker, or user account.
+
+### Option 2: Self-host with Docker
 
 You need [Docker](https://docs.docker.com/get-docker/) with Compose.
 
@@ -215,7 +224,7 @@ yourself and connecting to your server: [docs/MOBILE.md](docs/MOBILE.md).
 </picture>
 </p>
 
-- **`frontend/`** is React 19 and Vite (React Router, Zustand), built to static files inside Docker.
+- **`frontend/`** is React 19, TypeScript, and Vite (React Router, Zustand, i18next), built to static files inside Docker or run standalone in the browser. Monorepo builds and tasks are managed with Turborepo (`turbo build`).
 - **`api/`** is plain `node:http` with three dependencies: `@simplewebauthn/server` for passkeys,
   `web-push` for notifications and `undici` for the AI coach's provider calls. Everything is
   stored as JSON under `./data`.

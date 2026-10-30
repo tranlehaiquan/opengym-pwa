@@ -30,8 +30,8 @@ child process to drop privileges on, no runtime to carry in the image, and nothi
 
 A model on your own LAN is the compatible endpoint with no key: point it at
 `http://ollama.lan:11434` and pick a model from the list it serves. That is the whole
-configuration. (On the server, that is. The phone app's own-key Coach needs `https://`; see
-[On the phone](#on-the-phone).)
+configuration. (On the server, that is. The phone app's and browser's own-key Coach needs `https://`; see
+[On the phone and web (BYOK)](#on-the-phone-and-web-bring-your-own-key).)
 
 ## Turning it on
 
@@ -61,9 +61,9 @@ dashboard. If **Settings → Account → Admin dashboard** isn't there for you, 
 
 The Coach has one door: the **Coach** entry in the **Plan** menu (the button in the top-right
 corner of the Plan header, last entry: *Plan design and reviews, from your own training*), which
-opens the chat. Up to v1.3.9 it was a card at the top of Plan. The phone app also has
-**Settings → AI Coach**, where the phone chooses between your server's Coach and a key of its
-own (see [On the phone](#on-the-phone)).
+opens the chat. Up to v1.3.9 it was a card at the top of Plan. The phone app and the web app (in client-configured mode) also feature
+**Settings → AI Coach**, where the client chooses between your server's Coach and a key of its
+own (see [On the phone and web (BYOK)](#on-the-phone-and-web-bring-your-own-key)).
 
 The entry appears only when all of these hold:
 
@@ -479,40 +479,37 @@ Per-profile credentials follow the same rule for the same reason: they live in
 `coach-auth-<uid>.json` at mode `0600`, never in the synced state blob, so they cannot ride along
 in a device sync or in a user's own JSON export.
 
-## On the phone
+## On the phone and web (Bring Your Own Key)
 
-The App-Store build has no server of its own, so the Coach there is a choice made in
-**Settings → AI Coach**, and until it is made nothing AI-related is loaded at all:
+The standalone web app, installed PWA, and App Store / APK builds can run without a dedicated server, so the Coach there is configured in
+**Settings → AI Coach**, and until it is configured nothing AI-related is loaded or executed:
 
-- **Use my self-hosted openGym.** Pair the phone with your instance (the same pairing flow as
+- **Use my self-hosted openGym.** Pair the client with your instance (the same pairing flow as
   syncing — **Settings → Account → Pair the mobile app** on the site, then the address and code on the
-  phone). A paired phone is an ordinary profile: the Coach runs on your server with whatever
-  provider the admin configured, under the rules above, and nothing on the phone changes. The
-  one thing the server cannot do is push to the app, so a suggestion its automatic review left
+  client). A paired client connects as an ordinary profile: the Coach runs on your server with whatever
+  provider the admin configured, under the rules above, and nothing on the client changes. For mobile apps,
+  the one thing the server cannot do is push to the app, so a suggestion its automatic review left
   is announced by the app itself, once, when it next comes to the foreground.
-- **Bring my own API key.** The phone calls Anthropic, OpenAI, Gemini or a compatible endpoint
-  directly, with a key you paste. It runs the same payload allowlist, the same validator and
-  the same single repair round as the server, in the app. The key is kept in the platform's
-  secure storage — Keychain on iOS, the Keystore-backed store on Android — and never in the
-  app's state, so it cannot ride along in a backup, an export or a sync. You pay: the screen
-  says which host each request goes to and what leaves the device before you choose. An
-  **Advanced** section on the same screen is the phone's admin card — since there is no
-  instance, you are the admin: the daily cap (0 for no limit), the output-token ceiling a
+- **Bring my own API key.** The browser or phone calls Anthropic, OpenAI, Google Gemini or a compatible endpoint
+  directly via client-side fetch, with a key you enter. It runs the same payload allowlist, the same validator and
+  the same single repair round as the server, right inside the client runtime. On the web/PWA, the key is securely
+  persisted in local client storage and isolated from application backups and exports; on native phone builds, the
+  key is kept in the platform's secure storage (Keychain on iOS, Keystore on Android). You pay: the consent screen
+  transparently details which host each request goes to and what data leaves the device before you choose. An
+  **Advanced** section on the same screen serves as the client's admin card — since there is no
+  instance admin, you control the daily cap (0 for no limit), the output-token ceiling a
   reasoning model needs raised, and the maximum message length, with the same ranges the
   server clamps to.
 
-  Automatic reviews (weekly, or after every few workouts) run on the phone too, by the server's
-  rule (`api/coach/core/due.js`), but only while the app is open: there is no server to run them
-  and an app does not run JavaScript while it is closed. So a review that is due runs right after
-  the workout that completes the count, or on the first open after the weekly slot, and says
-  something only when it has a suggestion. Up to v1.4.2 nothing ran them on a phone at all.
+  Automatic reviews (weekly, or after every few workouts) run on the client too, by the server's
+  rule (`api/coach/core/due.js`), while the app or page is active: there is no background server to run them
+  when closed, so a review runs after a completing workout or on next launch, and notifies you only
+  when it has a suggestion.
 
-  A compatible endpoint has to be **`https://`** here. Android does not let apps send
-  unencrypted `http://` traffic, so a model on your LAN at `http://ollama.lan:11434` cannot be
-  reached from the phone, and the setup screen says so as soon as such an address is typed.
-  Either put HTTPS in front of the model (Tailscale's HTTPS certificates, or a reverse proxy
-  with a certificate), or use the first option: the server has no such rule, and its Coach
-  reaches an `http://` model on its own network.
+  A compatible endpoint has to be **`https://`** (unless connecting to localhost on desktop browsers). Mobile platforms
+  and modern browsers disallow unencrypted `http://` traffic to remote hosts, so a model on your LAN at
+  `http://ollama.lan:11434` requires HTTPS (such as via Tailscale HTTPS or a reverse proxy with TLS), or self-hosting
+  an openGym server that can reach the local model directly.
 
 ## Off is really off
 

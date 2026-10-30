@@ -9,10 +9,12 @@ to support it anyway, there's [Buy Me a Coffee](https://buymeacoffee.com/duartes
 
 ### Do I need my own server?
 
-No, there are three ways to use it:
+No, there are four ways to use it:
 
 - **Try it:** the [online demo](https://opengym.ch/demo/) runs entirely in your
   browser with example data.
+- **Standalone offline PWA:** run it directly in your browser or install it as a Progressive Web
+  App on mobile or desktop. All your data lives in browser IndexedDB with no server, Docker, or account needed.
 - **Phone only:** the Android app needs no server and no account; everything stays on the phone.
   See [MOBILE.md](MOBILE.md).
 - **Your own instance:** `docker compose up` on any machine with Docker gives you sync between
@@ -56,9 +58,10 @@ the [README](../README.md#how-opengym-is-built).
 ### Does the app itself use AI?
 
 Only if you turn it on. The default install calls no AI service. Two optional pieces exist: the
-[AI coach](AI_COACH.md) (off until an admin enables it, runs with your own provider key, every
-change needs your approval) and the [MCP server](../mcp/README.md), which lets an AI client on your
-computer read your history. Neither is needed for anything else in the app.
+[AI coach](AI_COACH.md) (off until enabled, runs either client-side in your browser/phone or on
+your server with your own provider key; every change needs your approval) and the
+[MCP server](../mcp/README.md), which lets an AI client on your computer read your history.
+Neither is needed for anything else in the app.
 
 ### My passkey sign-in doesn't work.
 
