@@ -15,6 +15,7 @@ COPY mcp/package.json ./mcp/
 RUN pnpm install --frozen-lockfile
 
 # Copy sources required for the build
+COPY turbo.json ./
 COPY frontend/ ./frontend/
 COPY scripts/ ./scripts/
 COPY catalogue/ ./catalogue/
