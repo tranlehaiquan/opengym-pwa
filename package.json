@@ -4,13 +4,14 @@
   "type": "module",
   "packageManager": "pnpm@12.16.1",
   "scripts": {
-    "dev": "pnpm --filter opengym-frontend dev",
-    "build": "pnpm --filter opengym-frontend build",
+    "dev": "turbo dev",
+    "build": "turbo build",
     "preview": "pnpm --filter opengym-frontend preview",
-    "typecheck": "pnpm --filter opengym-frontend typecheck",
-    "test": "pnpm --filter opengym-frontend test"
+    "typecheck": "turbo typecheck",
+    "test": "turbo test"
   },
   "devDependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "turbo": "^2.11.10"
   }
 }

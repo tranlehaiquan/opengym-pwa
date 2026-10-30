@@ -24,6 +24,11 @@ export function normalizeBaseUrl(providerId, rawBase) {
   return base;
 }
 
+/**
+ * @param {string} providerId
+ * @param {{ key?: string, baseUrl?: string, headers?: Record<string, string>, fetch?: typeof fetch, model: string }} options
+ * @returns {any}
+ */
 export function createAiSdkModel(providerId, { key, baseUrl, headers = {}, fetch: fetchImpl, model }) {
   const normalizedBase = normalizeBaseUrl(providerId, baseUrl);
   if (providerId === 'gemini') {
