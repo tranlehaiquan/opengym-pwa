@@ -19,8 +19,8 @@ vi.mock('../store/useUI.js', () => ({ useUI: { getState: () => ({ toast: vi.fn()
 const { JOB_ERRORS, BYOK_ERRORS, jobErrorText } = await import('./coach-api.js')
 const { setLang, getLang, LANGS, DERIVED_LOCALES } = await import('./i18n.js')
 
-const PACKS = Object.fromEntries(Object.entries(import.meta.glob('../locales/*.js', { eager: true }))
-  .map(([path, mod]) => [path.match(/([^/]+)\.js$/)[1], mod.default]))
+const PACKS = Object.fromEntries(Object.entries(import.meta.glob('../locales/*.json', { eager: true }))
+  .map(([path, mod]) => [path.match(/([^/]+)\.json$/)[1], mod.default]))
 const MAPS = { JOB_ERRORS, BYOK_ERRORS }
 // Read before any pack is loaded. English ships no pack, so these lines are the keys the packs
 // translate, and what t() hands back in English.

@@ -3227,7 +3227,7 @@ describe('Workout exercise tags', () => {
   // MUSCLE_NAME must not turn "Herz-Kreislauf" back into English for every built-in cardio exercise.
   it('keeps the cardio target translated (burpee, de)', async () => {
     const { _setLangState } = await import('../lib/i18n-core.js')
-    const { default: de } = await import('../locales/de.js')
+    const { default: de } = await import('../locales/de.json')
     _setLangState('de', de, null, null)
     try {
       await mount([exercise('1160', [false])])
@@ -3386,7 +3386,7 @@ describe('the reference line: last time or best set', () => {
   // round; isolated in its own direction it reads as before, next to sets that are forced.
   it('leaves a set with right-to-left words in its own direction', async () => {
     const { _setLangState } = await import('../lib/i18n-core.js')
-    const { default: ar } = await import('../locales/ar.js')
+    const { default: ar } = await import('../locales/ar.json')
     const side = r => ({ w: 15, r, done: true })
     const sided = [{ d: '2026-08-26', start: Date.parse('2026-08-26T18:00:00'), routineIds: ['A'],
       entries: [{ id: 'plain-bench', rid: 'A', target: { mode: 'reps', side: true, reps: 16, weight: 15, bodyweight: false },

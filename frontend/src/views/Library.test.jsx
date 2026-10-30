@@ -130,7 +130,7 @@ describe('Library header count', () => {
   })
 
   it('uses the language\'s own plural forms (Russian: 1 своё, 2 своих, 5 своих)', async () => {
-    const { default: ru } = await import('../locales/ru.js')
+    const { default: ru } = await import('../locales/ru.json')
     _setLangState('ru', ru, null, null)
     const forms = ru['{1} animated exercises + {0} of your own']
     expect(typeof forms).toBe('object')

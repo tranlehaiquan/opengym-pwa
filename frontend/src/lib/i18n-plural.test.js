@@ -1,9 +1,9 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { t, tn, _setLangState } from './i18n-core.js'
-import ru from '../locales/ru.js'
-import de from '../locales/de.js'
-import uk from '../locales/uk.js'
-import pl from '../locales/pl.js'
+import ru from '../locales/ru.json' with { type: 'json' }
+import de from '../locales/de.json' with { type: 'json' }
+import uk from '../locales/uk.json' with { type: 'json' }
+import pl from '../locales/pl.json' with { type: 'json' }
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'

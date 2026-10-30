@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { fmtAgo, fmtDaysAgo, changeCount, setsWorkCount, fmtDur, fmtDate } from './format.js'
 import { _setLangState } from './i18n-core.js'
-import ar from '../locales/ar.js'
-import uk from '../locales/uk.js'
+import ar from '../locales/ar.json' with { type: 'json' }
+import uk from '../locales/uk.json' with { type: 'json' }
 
 // "Last synced: …" in Settings — the platform words it, in the UI language (en-GB here).
 describe('fmtAgo', () => {

@@ -5,7 +5,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
 const log = vi.hoisted(() => [])
-vi.mock('../locales/de.js', async () => {
+vi.mock('../locales/de.json', async () => {
   log.push('words')
   await new Promise(r => setTimeout(r, 30))
   log.push('words done')

@@ -4,8 +4,8 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { _setLangState } from './lib/i18n-core.js'
 import { addDeviceDataMessage, addDeviceSetupMessage } from './sheets.jsx'
-import de from './locales/de.js'
-import ru from './locales/ru.js'
+import de from './locales/de.json' with { type: 'json' }
+import ru from './locales/ru.json' with { type: 'json' }
 
 afterEach(() => _setLangState('en', null, null, null))
 

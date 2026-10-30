@@ -9,7 +9,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import RoutineEdit from './RoutineEdit.jsx'
 import { DEF, useStore } from '../store/useStore.js'
 import { _setLangState } from '../lib/i18n-core.js'
-import de from '../locales/de.js'
+import de from '../locales/de.json' with { type: 'json' }
 import { buildPlanBundle, parsePlan } from '../lib/plan-share.js'
 
 const cssSource = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
@@ -281,7 +281,7 @@ describe('routine move controls', () => {
 })
 
 describe('routine move-control locale coverage', () => {
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
 
   it('defines both accessible names in every non-English locale pack', () => {
     expect(Object.keys(packs)).toHaveLength(Object.keys(LANGS).filter(c => c !== 'en' && !DERIVED_LOCALES[c]).length)

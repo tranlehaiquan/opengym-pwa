@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { LANGS, DATE_LOCALES, DERIVED_LOCALES } from './i18n-core.js'
 import { matchLocale } from './default-lang.js'
-import sv from '../locales/sv.js'
+import sv from '../locales/sv.json' with { type: 'json' }
 
 // Swedish (#721) came in as a pack plus two registry lines. A pack the registry forgets never
 // shows up in the language picker, and one without a date locale formats dates in English.
 describe('every locale pack is wired up', () => {
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
-  const codes = Object.keys(packs).map(p => p.match(/([\w-]+)\.js$/)[1])
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
+  const codes = Object.keys(packs).map(p => p.match(/([\w-]+)\.json$/)[1])
 
   it.each(codes)('%s is offered in the picker and has a date locale', (code) => {
     expect(LANGS[code], `${code} missing from LANGS`).toEqual(expect.any(String))

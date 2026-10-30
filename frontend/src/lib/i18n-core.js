@@ -3,6 +3,24 @@
 // (import.meta.glob lazy
 // loads, the React subscription hook) live in i18n.js and re-export from here.
 
+import i18next from 'i18next'
+
+/** @type {import('i18next').i18n} */
+export const i18n = i18next.createInstance()
+i18n.init({
+  lng: 'en',
+  fallbackLng: 'en',
+  keySeparator: false,
+  nsSeparator: false,
+  resources: {},
+  interpolation: {
+    prefix: '{',
+    suffix: '}',
+    escapeValue: false,
+  },
+  initImmediate: false,
+})
+
 export const LANGS = {
   en: 'English', de: 'Deutsch', 'de-CH': 'Deutsch (Schweiz)', es: 'Español', fr: 'Français',
   it: 'Italiano', pt: 'Português (Portugal)', 'pt-BR': 'Português (Brasil)', pl: 'Polski',
@@ -77,14 +95,19 @@ export const getVersion = () => version
 // Translate a source string; {0},{1}… are replaced with args (also on the English fallback).
 export function t(s, ...args) {
   let v = dict[s] || s
+  let key = s
   // A plural key (an object of forms, read by tn()) reached through plain t() — a call site
   // that was not moved to tn(). Pick a form rather than crash on replaceAll.
   if (v && typeof v === 'object') {
     const forms = v
     v = (typeof args[0] === 'number' && forms[pluralCategory(args[0])]) || forms.other || forms.many || forms.one || s
+    key = v
   }
-  for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
-  return v
+  if (!args.length) {
+    return i18n.t(key, { defaultValue: v })
+  }
+  const params = Object.assign({}, args, { defaultValue: v })
+  return i18n.t(key, params)
 }
 
 /* ------------------------------------------------------------------ plurals --
@@ -118,10 +141,9 @@ export function tn(one, other, n, ...rest) {
   if (forms && typeof forms === 'object') {
     const form = forms[pluralCategory(n)] || forms.other || forms.many || forms.one
     if (form) {
-      let v = form
       const args = [n, ...rest]
-      for (let i = 0; i < args.length; i++) v = v.replaceAll('{' + i + '}', args[i])
-      return v
+      const params = Object.assign({}, args, { defaultValue: form })
+      return i18n.t(form, params)
     }
   }
   return t(n === 1 ? one : other, n, ...rest)
@@ -267,5 +289,11 @@ export function _setLangState(newLang, newDict, newInstr, newExerciseNames, show
   enParens = !!showEn
   enOnly = !!enOnlyFlag
   version++
+
+  if (dict && Object.keys(dict).length > 0) {
+    i18n.addResourceBundle(lang, 'translation', dict, true, true)
+  }
+  i18n.changeLanguage(lang)
+
   return version
 }

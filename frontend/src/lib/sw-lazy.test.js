@@ -60,7 +60,7 @@ describe('the worker keeps the on-demand code too', () => {
     const bundle = {
       'assets/index-a.js': chunk('/app/frontend/src/main.jsx'),
       'assets/media-ingest-b.js': chunk('/app/frontend/src/lib/media-ingest.js'),
-      'assets/de-c.js': chunk('/app/frontend/src/locales/de.js'),
+      'assets/de-c.js': chunk('/app/frontend/src/locales/de.json'),
       'assets/de-d.js': chunk('/app/frontend/src/instr/de.js'),
       'assets/ru-e.js': chunk('/app/frontend/src/exercise-names/ru.js'),
       'assets/index-f.css': { type: 'asset' },

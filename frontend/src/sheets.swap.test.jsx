@@ -125,7 +125,7 @@ describe('active exercise swap locale coverage', () => {
     'Insert after this group',
     'Logged sets stay with the original exercise. The replacement will be inserted afterward.'
   ]
-  const packs = import.meta.glob('./locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('./locales/*.json', { eager: true, import: 'default' })
 
   it('defines every new prompt in all twelve locale packs', () => {
     // Minus English (the source language) and minus any derived locale, which transforms its

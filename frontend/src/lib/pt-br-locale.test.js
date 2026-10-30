@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { createHash } from 'node:crypto'
-import pt from '../locales/pt.js'
-import ptBR, { PT_BR_OVERRIDES } from '../locales/pt-BR.js'
+import pt from '../locales/pt.json' with { type: 'json' }
+import ptBR from '../locales/pt-BR.json' with { type: 'json' }
+import PT_BR_OVERRIDES from './pt-br-overrides.json' with { type: 'json' }
 import { DATE_LOCALES, LANGS } from './i18n-core.js'
 
 const placeholders = value => [...String(value).matchAll(/\{\d+\}/g)].map(match => match[0]).sort()

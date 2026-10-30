@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
-import zh from '../locales/zh.js'
-import zhTW from '../locales/zh-TW.js'
-import ko from '../locales/ko.js'
+import zh from '../locales/zh.json' with { type: 'json' }
+import zhTW from '../locales/zh-TW.json' with { type: 'json' }
+import ko from '../locales/ko.json' with { type: 'json' }
 
 // '{0} per side' is the plate-load hint: it says how much weight a side carries, with no unit in
 // the source string. A translation that adds a rep counter turns 20 kg of plates into "20 reps"

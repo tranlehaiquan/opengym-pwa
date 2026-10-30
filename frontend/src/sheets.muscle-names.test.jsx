@@ -10,7 +10,7 @@ import { EXIDX, registerCustom } from './lib/exercises.js'
 import { DEF, useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { _setLangState } from './lib/i18n-core.js'
-import de from './locales/de.js'
+import de from './locales/de.json' with { type: 'json' }
 import { exercisePicker, exConfigSheet } from './sheets.jsx'
 import MuscleExplorer from './components/MuscleExplorer.jsx'
 

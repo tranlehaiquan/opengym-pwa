@@ -4,20 +4,23 @@
 // subscription hook `useLang`.
 
 import { useSyncExternalStore } from 'react'
+import { useTranslation, I18nextProvider, Trans } from 'react-i18next'
 import {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES, RTL_LANGS,
   getLang, dateLocale, t, tn, instrFor, exerciseNameFor, exerciseNameSearchText, getVersion,
-  baseLang, derivePack, _setLangState, exerciseNameClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed
+  baseLang, derivePack, _setLangState, exerciseNameClass, descFor, instrTranslated, _setDetailsLoader, _setDetails, _detailsFailed,
+  i18n
 } from './i18n-core.js'
 
 export {
   LANGS, INSTR_LANGS, EXERCISE_NAME_LANGS, DATE_LOCALES, DERIVED_LOCALES, RTL_LANGS,
-  getLang, dateLocale, t, tn, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameSearchText, exerciseNameClass, baseLang
+  getLang, dateLocale, t, tn, instrFor, instrTranslated, descFor, exerciseNameFor, exerciseNameSearchText, exerciseNameClass, baseLang,
+  useTranslation, I18nextProvider, Trans, i18n
 }
 
 // Vite code-splits locale, instruction and exercise-name packs via import.meta.glob. They are
 // lazy, so the production bundle ships English only until another language is selected.
-const localePacks = import.meta.glob('../locales/*.js')
+const localePacks = import.meta.glob('../locales/*.json')
 const instrPacks = import.meta.glob('../instr/*.js')
 const exerciseNamePacks = import.meta.glob('../exercise-names/*.js')
 const descPacks = import.meta.glob('../exercise-desc/*.js')
@@ -69,7 +72,7 @@ export async function setLang(l, showEn, enOnly) {
   // English waited three round trips before Home could draw.
   const pack = async (packs, key, fallback) => { try { return (await packs[key]()).default } catch (e) { return fallback } }
   const [dict, instr, exerciseNames] = await Promise.all([
-    base === 'en' ? {} : pack(localePacks, '../locales/' + base + '.js', {}),
+    base === 'en' ? {} : pack(localePacks, '../locales/' + base + '.json', {}),
     base === 'en' || !INSTR_LANGS.includes(base) ? null : pack(instrPacks, '../instr/' + base + '.js', null),
     base === 'en' || !EXERCISE_NAME_LANGS.includes(base) ? null : pack(exerciseNamePacks, '../exercise-names/' + base + '.js', null),
   ])

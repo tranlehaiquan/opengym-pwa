@@ -267,7 +267,7 @@ describe('CoachIntake — the consent screen', () => {
     // The screen used to pass these lines to t() as variables, which check-source-strings cannot
     // see, and eight of the ten had no translation in any pack.
     const english = Object.values(CATEGORY_TEXT).map(text => text())
-    const de = (await import('../locales/de.js')).default
+    const de = (await import('../locales/de.json')).default
     await setLang('de')
     try {
       mount()
@@ -324,7 +324,7 @@ describe('CoachIntake — the two answers that gate the flow', () => {
       ['Training regularly', 'Consistent for a while now.']
     ]
     const choices = () => all('.ob-choice').map(c => [c.querySelector('.ob-choice-t').firstChild.textContent, c.querySelector('.ob-choice-s').textContent])
-    const de = (await import('../locales/de.js')).default
+    const de = (await import('../locales/de.json')).default
     mocks.S.coach = { consent: { agreedAt: '2026-09-01T00:00:00Z', version: CONSENT_VERSION }, profile: null, chat: [] }
     await setLang('de')
     try {

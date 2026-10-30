@@ -1,5 +1,4 @@
-// Vietnamese UI strings. Keys are the English source strings (see lib/i18n.js).
-export default {
+{
   "Confirm": "Xác nhận",
   "Cancel": "Hủy",
   "Press back again to exit": "Nhấn quay lại lần nữa để thoát",

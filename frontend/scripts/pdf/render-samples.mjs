@@ -48,7 +48,7 @@ const report = hasReport ? await load('/src/lib/report-print.js') : null
 async function useLang(l) {
   const base = core.baseLang(l)
   const pack = async p => { try { return (await load(p)).default } catch { return null } }
-  const dict = base === 'en' ? {} : await pack(`/src/locales/${base}.js`)
+  const dict = base === 'en' ? {} : await pack(`/src/locales/${base}.json`)
   const names = base === 'en' || !core.EXERCISE_NAME_LANGS.includes(base) ? null : await pack(`/src/exercise-names/${base}.js`)
   core._setLangState(l, core.derivePack(l, dict || {}), null, core.derivePack(l, names), true, false)
 }

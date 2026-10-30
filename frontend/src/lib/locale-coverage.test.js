@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { LANGS, DERIVED_LOCALES } from './i18n-core.js'
-import { PT_BR_OVERRIDES } from '../locales/pt-BR.js'
+import PT_BR_OVERRIDES from './pt-br-overrides.json' with { type: 'json' }
 import { BODYPARTS, allExercises } from './exercises.js'
 
 const PACK_KEYS = [
@@ -11,13 +11,13 @@ const PACK_KEYS = [
 ]
 
 describe('exercise-name toggle locale coverage', () => {
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
   const localeCodes = Object.keys(LANGS).filter(code => code !== 'en' && !DERIVED_LOCALES[code])
 
   it('defines every Settings label in each locale pack', () => {
     expect(Object.keys(packs)).toHaveLength(localeCodes.length)
     for (const code of localeCodes) {
-      const pack = packs[`../locales/${code}.js`]
+      const pack = packs[`../locales/${code}.json`]
       expect(pack, `${code} locale pack is missing`).toBeTruthy()
       for (const key of PACK_KEYS) {
         expect(Object.hasOwn(pack, key), `${code} is missing ${key}`).toBe(true)
@@ -31,7 +31,7 @@ describe('exercise-name toggle locale coverage', () => {
 // no t('literal') names, so check-source-strings cannot see them. 'full body' came with the
 // catalogue in v1.3.8 and stayed English in every language until QA found it (v1.3.9).
 describe('catalogue body parts and equipment', () => {
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
   it('every body part and every piece of equipment of the catalogue has a word in each pack', () => {
     const terms = [...BODYPARTS, ...new Set(allExercises({}).map(e => e.eq).filter(Boolean))]
     expect(BODYPARTS).toContain('full body')

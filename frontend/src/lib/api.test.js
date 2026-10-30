@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { webauthnOK, bio, BIO, passkeyError, api } from './api.js'
-import de from '../locales/de.js'
+import de from '../locales/de.json' with { type: 'json' }
 import { _setLangState } from './i18n-core.js'
 
 const originalPublicKeyCredential = window.PublicKeyCredential

@@ -478,7 +478,7 @@ describe('searchSettings', () => {
 })
 
 describe('translations', () => {
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
   it('every page and searchable row title has a word in each pack', () => {
     const keys = [...new Set([...PAGE_IDS.map(id => PAGES[id].title), ...SEARCH.map(e => e.title)])]
     for (const [file, pack] of Object.entries(packs)) {

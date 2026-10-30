@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { createHash } from 'node:crypto'
-import pt from '../src/locales/pt.js'
-import { PT_BR_OVERRIDES } from '../src/locales/pt-BR.js'
+import pt from '../src/locales/pt.json' with { type: 'json' }
+import PT_BR_OVERRIDES from '../src/lib/pt-br-overrides.json' with { type: 'json' }
 
 const inherited = Object.entries(pt)
   .filter(([key]) => !(key in PT_BR_OVERRIDES))

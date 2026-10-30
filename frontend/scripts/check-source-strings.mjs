@@ -48,8 +48,8 @@ for (const file of walk(srcDir)) {
 }
 
 const defined = new Set()
-for (const file of readdirSync(localesDir).filter(f => f.endsWith('.js'))) {
-  const pack = (await import(pathToFileURL(join(localesDir, file)).href)).default
+for (const file of readdirSync(localesDir).filter(f => f.endsWith('.json'))) {
+  const pack = JSON.parse(readFileSync(join(localesDir, file), 'utf8'))
   for (const key of Object.keys(pack)) defined.add(key)
 }
 

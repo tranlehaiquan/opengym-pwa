@@ -22,7 +22,7 @@ const run = packs => {
     mkdirSync(join(dir, 'src', 'locales'), { recursive: true })
     copyFileSync(script, join(dir, 'scripts', 'check-locales.mjs'))
     for (const [lang, dict] of Object.entries(packs))
-      writeFileSync(join(dir, 'src', 'locales', `${lang}.js`), `export default ${JSON.stringify(dict, null, 2)}\n`)
+      writeFileSync(join(dir, 'src', 'locales', `${lang}.json`), `${JSON.stringify(dict, null, 2)}\n`)
     const r = spawnSync(process.execPath, [join(dir, 'scripts', 'check-locales.mjs')], { encoding: 'utf8' })
     return { code: r.status, out: r.stdout + r.stderr }
   } finally { rmSync(dir, { recursive: true, force: true }) }

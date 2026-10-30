@@ -10,12 +10,12 @@
 // The reference is the union of all locales, not one blessed file: a key added to a
 // single locale then flags the other ten instead of passing unnoticed.
 
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 const localesDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'locales')
-const files = readdirSync(localesDir).filter(f => f.endsWith('.js')).sort()
+const files = readdirSync(localesDir).filter(f => f.endsWith('.json')).sort()
 
 if (!files.length) {
   console.error(`No locale files found in ${localesDir}`)
@@ -24,12 +24,18 @@ if (!files.length) {
 
 const locales = new Map()
 for (const file of files) {
-  const { default: dict } = await import(pathToFileURL(join(localesDir, file)).href)
-  if (!dict || typeof dict !== 'object') {
-    console.error(`${file}: no default-exported object`)
+  let dict
+  try {
+    dict = JSON.parse(readFileSync(join(localesDir, file), 'utf8'))
+  } catch (err) {
+    console.error(`${file}: failed to parse JSON: ${err.message}`)
     process.exit(1)
   }
-  locales.set(file.replace(/\.js$/, ''), dict)
+  if (!dict || typeof dict !== 'object' || Array.isArray(dict)) {
+    console.error(`${file}: not a JSON object`)
+    process.exit(1)
+  }
+  locales.set(file.replace(/\.json$/, ''), dict)
 }
 
 // How many locales carry each key — 1 means the key was added to a single file only,

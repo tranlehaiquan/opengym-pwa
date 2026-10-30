@@ -204,7 +204,7 @@ describe('remove-exercise locale coverage', () => {
     'Remove',
     'Which exercise in this superset do you want to remove?'
   ]
-  const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
   // Every non-English language has its own pack (English is the source, so it has none),
   // except a derived locale such as de-CH, which transforms its base language's pack at load
   // time — computed from LANGS rather than hardcoded so adding a language doesn't silently

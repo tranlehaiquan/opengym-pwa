@@ -5,9 +5,9 @@
 // the watch uses are below. Run it after changing either, and commit what it writes:
 //
 //   node frontend/ios/ci/watch-strings.mjs
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const out = join(root, 'ios', 'App', 'Watch')
@@ -226,7 +226,7 @@ const PLIST = {
 const esc = s => String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')
 let problems = 0
 for (const [pack, lproj] of Object.entries(LANGS)) {
-  const { default: dict } = await import(pathToFileURL(join(root, 'src', 'locales', pack + '.js')).href)
+  const dict = JSON.parse(readFileSync(join(root, 'src', 'locales', pack + '.json'), 'utf8'))
   const lines = [`/* openGym on the Apple Watch, ${lproj}. Written by ios/ci/watch-strings.mjs: change that, not this. */`, '']
   const put = (k, v) => {
     if (!v) { console.error(`${lproj}: no word for "${k}"`); problems++; return }

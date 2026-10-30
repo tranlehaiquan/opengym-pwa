@@ -4,7 +4,7 @@ import {
   baseLang, derivePack, dateLocale, getLang, t, _setLangState, exerciseNameClass, exerciseNameFor, CASED_NAME_LANGS, RTL_LANGS
 } from './i18n-core.js'
 import { EXDB } from './exercises-data.js'
-import de from '../locales/de.js'
+import de from '../locales/de.json' with { type: 'json' }
 
 describe('baseLang', () => {
   it('maps a derived locale to the language whose packs it loads', () => {
@@ -85,12 +85,12 @@ describe('de-CH as a selectable language', () => {
   })
 
   it('ships no locale pack of its own, so nothing can shadow the derivation', () => {
-    const packs = import.meta.glob('../locales/*.js', { eager: true, import: 'default' })
+    const packs = import.meta.glob('../locales/*.json', { eager: true, import: 'default' })
     for (const code of Object.keys(DERIVED_LOCALES)) {
-      expect(packs[`../locales/${code}.js`], `${code} is derived and must not have a pack`).toBeUndefined()
+      expect(packs[`../locales/${code}.json`], `${code} is derived and must not have a pack`).toBeUndefined()
     }
     // Control: a language that is not derived does have one.
-    expect(packs['../locales/de.js']).toBeTruthy()
+    expect(packs['../locales/de.json']).toBeTruthy()
   })
 
   it('declares de as its base, not the other way round', () => {
