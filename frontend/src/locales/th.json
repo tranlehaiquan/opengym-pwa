@@ -2573,5 +2573,6 @@
   "Mono": "โมโน",
   "Just for this phone. Some home screens take a moment to catch up.": "เฉพาะโทรศัพท์เครื่องนี้ หน้าจอโฮมบางแบบต้องใช้เวลาสักครู่ถึงจะเปลี่ยน",
   "The icon could not be changed.": "เปลี่ยนไอคอนไม่ได้",
-  "Try the Halloween app icon": "ลองไอคอนแอปฮาโลวีน"
+  "Try the Halloween app icon": "ลองไอคอนแอปฮาโลวีน",
+  "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\").": "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\")."
 }

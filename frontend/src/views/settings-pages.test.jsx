@@ -150,6 +150,12 @@ describe('the root', () => {
     expect(mocks.navs).toEqual([['/settings/alerts'], ['/coach/setup'], ['/settings/account']])
   })
 
+  it('shows the Coach row in standalone PWA or when client BYOK is configured', () => {
+    expect(pageVisible('coach', { mobile: false, standalone: true })).toBe(true)
+    expect(pageVisible('coach', { mobile: false, coachLocal: { mode: 'byok' } })).toBe(true)
+    expect(pageVisible('coach', { mobile: false, standalone: false })).toBe(false)
+  })
+
   it('in a hosted app, an admin gets the Coach row too, straight to the Coach card of the admin dashboard', () => {
     mocks.config = { coach: { enabled: true } }
     mocks.user = { id: 'u1', name: 'Dana' }

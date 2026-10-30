@@ -2764,5 +2764,6 @@
   "Mono": "Моно",
   "Just for this phone. Some home screens take a moment to catch up.": "Только для этого телефона. Некоторым рабочим столам нужна минутка, чтобы заметить.",
   "The icon could not be changed.": "Не удалось сменить значок.",
-  "Try the Halloween app icon": "Попробуй хеллоуинский значок приложения"
+  "Try the Halloween app icon": "Попробуй хеллоуинский значок приложения",
+  "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\").": "Не удалось связаться с провайдером. Если вы используете локальную модель (например, Ollama), убедитесь, что CORS включен (например, OLLAMA_ORIGINS=\"*\")."
 }

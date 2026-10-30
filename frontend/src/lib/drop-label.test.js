@@ -14,7 +14,7 @@ const removeWords = {
 describe('the drop-set sub-row label', () => {
   it('is a drop set in every pack, never a word for remove', () => {
     for (const [path, pack] of Object.entries(packs)) {
-      const lang = path.match(/([\w-]+)\.js$/)[1]
+      const lang = path.match(/([\w-]+)\.(?:js|json)$/)[1]
       const v = pack['Drop {0}']
       if (v == null) continue   // pt-BR inherits pt
       expect(v, lang).not.toBe(pack['Remove {0}'])

@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
 import { t } from '../lib/i18n.js'
-import { MOBILE } from '../lib/mobile.js'
 import { CATEGORY_TEXT } from '../lib/coach.js'
 import { getApiKey, setApiKey, clearApiKey } from '../lib/coach-secrets.js'
 import { coachLimits, clampCoachLimit, COACH_LIMITS } from '../lib/coach-device.js'
@@ -61,7 +60,6 @@ export default function CoachSetup() {
   // freely and is only clamped and saved when the field is left.
   const [limits, setLimits] = useState(() => coachLimits(coachLocal))
 
-  useEffect(() => { if (!MOBILE) nav('/settings', { replace: true }) }, [])
   useEffect(() => { getApiKey().then(k => setHasKey(!!k)) }, [])
   // Ask the paired server afresh: the admin may have switched the Coach on since this phone booted.
   useEffect(() => { if (user) refreshConfig() }, [user])
@@ -101,12 +99,25 @@ export default function CoachSetup() {
       setStep(1)
       const k = key.trim() || await getApiKey()
       const r = await local.localModels({ provider, baseUrl: v.value }, k)
-      if (!r.ok) { setStep(-1); toast(t('Could not reach the provider: {0}', r.error)); return }
+      if (!r.ok) {
+        setStep(-1)
+        const err = r.error || ''
+        const isCors = /failed to fetch|network error|cors/i.test(err)
+        toast(isCors
+          ? t('Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS="*").')
+          : t('Could not reach the provider: {0}', err))
+        return
+      }
       setModels(r.models)
       setStep(2)
       if (!model && meta.defaultModel && r.models.includes(meta.defaultModel)) setModel(meta.defaultModel)
     } catch (e) {
-      setStep(-1); toast(e.message || t('Could not connect'))
+      setStep(-1)
+      const err = e.message || String(e)
+      const isCors = /failed to fetch|network error|cors/i.test(err)
+      toast(isCors
+        ? t('Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS="*").')
+        : (e.message || t('Could not connect')))
     } finally { setBusy(false) }
   }
 

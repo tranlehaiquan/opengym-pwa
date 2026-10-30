@@ -37,6 +37,7 @@ export async function nativeFetch(url, init = {}) {
   return {
     ok: res.status >= 200 && res.status < 300,
     status: res.status,
+    headers: new Headers(res.headers || {}),
     text: async () => text,
     json: async () => JSON.parse(text)
   }

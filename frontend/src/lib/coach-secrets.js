@@ -38,10 +38,18 @@ export const withTimeout = (promise, ms = NATIVE_TIMEOUT_MS) => new Promise((res
 
 // Any small secret under a key of its own, with the same fallbacks: lib/cf-access.js keeps the
 // Cloudflare Access service token here, beside the Coach's API key.
+// In a standalone PWA or browser client without native secure storage, localStorage provides
+// origin-isolated client persistence across sessions and reloads without leaking into sync or export backups.
 export async function secureGet(key) {
   const { store: p } = await plugin()
   if (p) {
     try { const v = await withTimeout(p.get(key)); return typeof v === 'string' && v ? v : null } catch { /* fall through */ }
+  }
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const v = localStorage.getItem(key)
+      return typeof v === 'string' && v ? v : null
+    } catch { /* storage disabled/blocked */ }
   }
   return memory.get(key) || null
 }
@@ -52,11 +60,21 @@ export async function secureSet(key, value) {
   if (p) {
     try { await withTimeout(p.set(key, v)); memory.delete(key); return } catch { /* fall through */ }
   }
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem(key, v)
+      memory.delete(key)
+      return
+    } catch { /* storage disabled/blocked */ }
+  }
   memory.set(key, v)
 }
 export async function secureRemove(key) {
   const { store: p } = await plugin()
   if (p) { try { await withTimeout(p.remove(key)) } catch { /* nothing to clear */ } }
+  if (typeof localStorage !== 'undefined') {
+    try { localStorage.removeItem(key) } catch { /* ignore */ }
+  }
   memory.delete(key)
 }
 

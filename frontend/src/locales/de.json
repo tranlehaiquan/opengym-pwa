@@ -2573,5 +2573,6 @@
   "Mono": "Mono",
   "Just for this phone. Some home screens take a moment to catch up.": "Nur für dieses Handy. Manche Startbildschirme brauchen einen Moment, bis sie mitkommen.",
   "The icon could not be changed.": "Das Icon ließ sich nicht ändern.",
-  "Try the Halloween app icon": "Probier das Halloween-App-Icon"
+  "Try the Halloween app icon": "Probier das Halloween-App-Icon",
+  "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\").": "Anbieter nicht erreichbar. Wenn ein lokales Modell (wie Ollama) verwendet wird, stellen Sie sicher, dass CORS aktiviert ist (z. B. OLLAMA_ORIGINS=\"*\")."
 }

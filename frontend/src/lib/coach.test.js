@@ -49,6 +49,12 @@ describe('gating', () => {
     expect(coachAvailable(null, null, { mobile: true, coachMode: 'byok' })).toBe(true)
   })
 
+  it('permits client BYOK on standalone web or PWA environments without a server', () => {
+    expect(coachAvailable(null, null, { mobile: false, coachMode: 'byok' })).toBe(true)
+    expect(coachAvailable(null, null, { mobile: false, coachMode: 'off' })).toBe(false)
+    expect(coachAvailable(null, null, { mobile: false })).toBe(false)
+  })
+
   it('a phone paired to a server takes the web rule — the server must offer the Coach', () => {
     expect(coachAvailable({ coach: { enabled: true } }, { id: 'u' }, { mobile: true })).toBe(true)
     expect(coachAvailable({ coach: { enabled: true } }, { id: 'u' }, { mobile: true, coachMode: 'server' })).toBe(true)

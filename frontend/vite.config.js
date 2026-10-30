@@ -100,9 +100,20 @@ const flavor = {
 const pkgVersion = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version
 const appVersion = process.env.APP_BUILD ? `${pkgVersion}+${process.env.APP_BUILD}` : pkgVersion
 
+const safari15Compat = {
+  name: 'opengym-safari15-compat',
+  renderChunk(code) {
+    if (!code.includes('URL.canParse') && !code.includes('AbortSignal.any')) return null
+    const res = code
+      .replaceAll('URL.canParse', '((u)=>{try{return Boolean(new URL(u))}catch{return false}})')
+      .replaceAll('AbortSignal.any', '((sigs)=>{const c=new AbortController();for(const s of sigs){if(s?.aborted){c.abort(s.reason);break}s?.addEventListener?.("abort",()=>c.abort(s.reason),{once:true})}return c.signal})')
+    return { code: res }
+  }
+}
+
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
-  plugins: [react(), umami, flavor, swStamp, catalogueMedia],
+  plugins: [react(), umami, flavor, swStamp, catalogueMedia, safari15Compat],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core

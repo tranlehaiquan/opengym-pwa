@@ -26,4 +26,18 @@ describe('stateJson', () => {
     workouts[0].id = 'changed'
     expect(() => stateJson({ workouts })).toThrow(/changed in place/)
   })
+
+  it('guarantees that application state export does not contain apiKey', () => {
+    const S = {
+      workouts: [],
+      coach: {
+        consent: { agreedAt: '2026-10-30T00:00:00Z', version: 1 },
+        cadence: 'off',
+        chat: []
+      }
+    }
+    const json = stateJson(S)
+    expect(json).not.toContain('apiKey')
+    expect(JSON.parse(json).coach.apiKey).toBeUndefined()
+  })
 })

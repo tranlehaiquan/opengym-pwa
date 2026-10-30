@@ -2573,5 +2573,6 @@
   "Mono": "Đơn sắc",
   "Just for this phone. Some home screens take a moment to catch up.": "Chỉ áp dụng cho điện thoại này. Một số màn hình chính cần một lúc để cập nhật.",
   "The icon could not be changed.": "Không thể thay đổi biểu tượng.",
-  "Try the Halloween app icon": "Thử biểu tượng ứng dụng Halloween"
+  "Try the Halloween app icon": "Thử biểu tượng ứng dụng Halloween",
+  "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\").": "Không thể kết nối tới nhà cung cấp. Nếu dùng mô hình cục bộ (như Ollama), hãy đảm bảo đã bật CORS (ví dụ: OLLAMA_ORIGINS=\"*\")."
 }

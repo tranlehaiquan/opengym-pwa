@@ -2573,5 +2573,6 @@
   "Mono": "모노",
   "Just for this phone. Some home screens take a moment to catch up.": "이 휴대폰에만 적용돼요. 홈 화면에 따라 바뀌는 데 잠깐 걸릴 수 있어요.",
   "The icon could not be changed.": "아이콘을 바꾸지 못했어요.",
-  "Try the Halloween app icon": "핼러윈 앱 아이콘 써 보기"
+  "Try the Halloween app icon": "핼러윈 앱 아이콘 써 보기",
+  "Could not reach the provider. If using a local model (like Ollama), ensure CORS is enabled (e.g. OLLAMA_ORIGINS=\"*\").": "제공자에 연결할 수 없습니다. 로컬 모델(예: Ollama)을 사용하는 경우 CORS가 활성화되어 있는지 확인하세요(예: OLLAMA_ORIGINS=\"*\")."
 }

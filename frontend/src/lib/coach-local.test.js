@@ -19,7 +19,10 @@ vi.mock('./capacitor-fetch.js', () => ({
   nativeFetch: async (url, init) => {
     wire.calls.push({ url, init, body: init.body ? JSON.parse(init.body) : null })
     const a = typeof wire.answer === 'function' ? wire.answer(wire.calls.length, url, init) : wire.answer
-    return { ok: a.status < 300, status: a.status, text: async () => JSON.stringify(a.body), json: async () => a.body }
+    return new Response(JSON.stringify(a.body), {
+      status: a.status,
+      headers: { 'content-type': 'application/json' }
+    })
   }
 }))
 
@@ -38,7 +41,7 @@ const state = () => ({
   ],
   coach: { consent: { agreedAt: '2026-08-01T00:00:00Z', version: 1 }, profile: null, cadence: 'off', lastReview: null, log: [], snapshots: [] }
 })
-const chat = content => ({ status: 200, body: { choices: [{ finish_reason: 'stop', message: { content } }] } })
+const chat = content => ({ status: 200, body: { choices: [{ index: 0, finish_reason: 'stop', message: { content } }] } })
 const review = { coach_contract: 1, summary: 'One tweak.', evidence: { from: '2026-08-01', to: '2026-08-20', sessions: 1 },
   changes: [{ id: 'c1', type: 'sets', target: { routineId: 'r1', exId: EX }, after: 4, why: 'every set was clean' }] }
 
