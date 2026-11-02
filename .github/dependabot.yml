@@ -15,7 +15,7 @@ version: 2
 
 updates:
   # Frontend app — frontend/package.json
-  - package-ecosystem: pnpm
+  - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: monthly
@@ -29,7 +29,7 @@ updates:
         update-types: ['major']
 
   # MCP bridge — mcp/package.json
-  - package-ecosystem: pnpm
+  - package-ecosystem: npm
     directory: /mcp
     schedule:
       interval: monthly
@@ -40,7 +40,7 @@ updates:
         update-types: ['minor', 'patch']
 
   # Root workspace — package.json
-  - package-ecosystem: pnpm
+  - package-ecosystem: npm
     directory: /
     schedule:
       interval: monthly
@@ -73,4 +73,5 @@ updates:
       actions-major:
         patterns: ['*']
         update-types: ['major']
+
 
