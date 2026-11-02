@@ -42,7 +42,7 @@ jobs:
             ios:
               - 'frontend/ios/**'
               - 'frontend/package.json'
-              - 'frontend/package-lock.json'
+              - 'pnpm-lock.yaml'
               - 'frontend/capacitor.config.json'
               - 'frontend/src/lib/native*.js'
               - 'frontend/src/lib/rest-alert.js'
@@ -74,16 +74,14 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       # The phone build, copied into ios/App/App/public; cap sync runs pod install.
-      - run: npm run build:mobile
-        working-directory: frontend
+      - run: pnpm --filter opengym-frontend build:mobile
       # The asset pack downloader extension, until the project with it is committed (does nothing then).
       - run: ruby ios/ci/add-asset-downloader.rb
         working-directory: frontend
@@ -318,15 +316,13 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
-      - run: npm run build:mobile && rm -rf ios/App/App/public/exercise-media
-        working-directory: frontend
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter opengym-frontend build:mobile && rm -rf frontend/ios/App/App/public/exercise-media
       - run: ruby ios/ci/add-asset-downloader.rb
         working-directory: frontend
       - run: ruby ios/ci/add-watch-app.rb
@@ -386,15 +382,13 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-        working-directory: frontend
-      - run: npm run build:mobile
-        working-directory: frontend
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter opengym-frontend build:mobile
       - run: ruby ios/ci/add-asset-downloader.rb
         working-directory: frontend
       - run: ruby ios/ci/add-watch-app.rb

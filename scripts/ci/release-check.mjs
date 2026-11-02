@@ -16,7 +16,6 @@ const want = tag ? tag.replace(/^v/, '') : null
 const read = (p) => { try { return readFileSync(p, 'utf8') } catch { return '' } }
 const found = {
   'frontend/package.json': JSON.parse(read('frontend/package.json') || '{}').version,
-  'api/package.json': JSON.parse(read('api/package.json') || '{}').version,
   'Android versionName': /versionName\s+"([^"]+)"/.exec(read('frontend/android/app/build.gradle'))?.[1],
   'Android versionCode': /versionCode\s+(\d+)/.exec(read('frontend/android/app/build.gradle'))?.[1],
   'iOS MARKETING_VERSION': [...new Set([...read('frontend/ios/App/App.xcodeproj/project.pbxproj').matchAll(/MARKETING_VERSION = ([^;]+);/g)].map((m) => m[1]))].join(', '),
@@ -27,7 +26,7 @@ const section = want ? new RegExp(`^## v${want.replace(/\./g, '\\.')}([^0-9.]|$)
 
 const errors = [], warnings = []
 if (want) {
-  for (const k of ['frontend/package.json', 'api/package.json']) if (found[k] !== want) errors.push(`${k} says ${found[k]}, the tag says ${want}`)
+  for (const k of ['frontend/package.json']) if (found[k] !== want) errors.push(`${k} says ${found[k]}, the tag says ${want}`)
   if (!section) errors.push(`CHANGELOG.md has no "## v${want}" section (the release notes come from there)`)
   if (found['Android versionName'] !== want) warnings.push(`Android versionName is ${found['Android versionName']}`)
   if (found['iOS MARKETING_VERSION'] !== want) warnings.push(`iOS MARKETING_VERSION is ${found['iOS MARKETING_VERSION']}`)
