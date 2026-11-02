@@ -11,8 +11,8 @@ import { spawn } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
 const API = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'api')
-const HAVE_API = fs.existsSync(path.join(API, 'node_modules', '@simplewebauthn', 'server'))
-if (!HAVE_API && process.env.CI) throw new Error('api/node_modules is missing: run `npm ci` in api/ before the MCP tests in CI')
+const HAVE_API = fs.existsSync(API) && fs.existsSync(path.join(API, 'node_modules', '@simplewebauthn', 'server'))
+if (fs.existsSync(API) && !HAVE_API && process.env.CI) throw new Error('api/node_modules is missing: run `npm ci` in api/ before the MCP tests in CI')
 
 const SECRET = crypto.randomBytes(32).toString('hex')
 const UID = 'u_mcp_1'
