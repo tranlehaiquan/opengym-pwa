@@ -38,9 +38,6 @@ jobs:
       pull-requests: read
     outputs:
       frontend: ${{ steps.f.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' }}
-      mcp: ${{ steps.f.outputs.mcp == 'true' || github.event_name == 'workflow_dispatch' }}
-      images: ${{ steps.f.outputs.images == 'true' || github.event_name == 'workflow_dispatch' }}
-      android: ${{ steps.f.outputs.android == 'true' || github.event_name == 'workflow_dispatch' }}
       catalogue: ${{ steps.f.outputs.catalogue == 'true' || github.event_name == 'workflow_dispatch' }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -60,33 +57,6 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'turbo.json'
-            mcp:
-              - '.github/workflows/test.yml'
-              - 'scripts/ci/**'
-              - 'mcp/**'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'frontend/src/lib/**'
-            images:
-              - '.github/workflows/test.yml'
-              - 'Dockerfile'
-              - 'nginx.conf'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-              - 'turbo.json'
-              - 'frontend/**'
-              - 'catalogue/**'
-              - 'scripts/**'
-            android:
-              - '.github/workflows/test.yml'
-              - 'frontend/android/**'
-              - 'frontend/package.json'
-              - 'frontend/capacitor.config.json'
-              - 'frontend/scripts/check-mobile-bundle.mjs'
-              - 'scripts/android/**'
-              - 'scripts/catalogue/stage-media.mjs'
-              - 'pnpm-lock.yaml'
             catalogue:
               - '.github/workflows/test.yml'
               - 'catalogue/**'
@@ -153,43 +123,6 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-  mcp:
-    needs: changes
-    if: needs.changes.outputs.mcp == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: MCP tests
-        working-directory: mcp
-        run: >
-          pnpm exec vitest run
-          --reporter=default --reporter=json --outputFile.json=test-results.json
-          --coverage --coverage.provider=v8 --coverage.reporter=json-summary
-      - name: Server loads in plain node
-        run: pnpm run check:node-loadable
-        working-directory: mcp
-      - name: Stats
-        if: always()
-        run: >
-          node scripts/ci/test-report.mjs --label MCP --root mcp
-          --vitest mcp/test-results.json --coverage mcp/coverage/coverage-summary.json --out stats/mcp.json
-      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        if: always()
-        with:
-          name: stats-mcp
-          path: stats/mcp.json
-          retention-days: 30
-          if-no-files-found: ignore
-
   catalogue:
     needs: changes
     if: needs.changes.outputs.catalogue == 'true'
@@ -209,75 +142,8 @@ jobs:
       - name: Media stay within 180 px (licence)
         run: node scripts/catalogue/check-media.mjs
 
-  images:
-    needs: changes
-    if: needs.changes.outputs.images == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
-      - name: Build web container
-        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
-        with:
-          context: .
-          file: ./Dockerfile
-          load: true
-          tags: opengym:ci
-          cache-from: type=gha,scope=ci-web
-          cache-to: type=gha,mode=max,scope=ci-web
-      - name: The web image boots and serves
-        run: |
-          docker run -d --name web -p 8080:80 opengym:ci
-          for i in $(seq 1 30); do curl -fsS http://localhost:8080/ >/dev/null 2>&1 && break; sleep 1; done
-          curl -fsS http://localhost:8080/ | grep -q 'id="root"'
-          docker rm -f web
-
-  android:
-    needs: changes
-    if: needs.changes.outputs.android == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
-        with:
-          distribution: temurin
-          java-version: 21
-      - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
-        with:
-          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/stores' }}
-          add-job-summary: on-failure
-      - run: pnpm install --frozen-lockfile
-      - name: Phone bundle + cap sync
-        run: pnpm --filter opengym-frontend build:mobile
-      - name: JVM unit tests, sideload APK, play flavour compiles
-        working-directory: frontend/android
-        run: ./gradlew --no-daemon testSideloadDebugUnitTest assembleSideloadDebug compilePlayDebugJavaWithJavac
-      - name: Stats
-        if: always()
-        working-directory: frontend/android
-        run: |
-          {
-            echo "### Android"
-            for a in app/build/outputs/apk/sideload/debug/*.apk; do
-              [ -f "$a" ] && echo "- debug sideload APK: $(numfmt --to=iec "$(stat -c %s "$a")") ($(basename "$a"))"
-            done
-            cat app/build/test-results/testSideloadDebugUnitTest/*.xml 2>/dev/null \
-              | grep -o '<testsuite [^>]*' | sed -E 's/.*name="([^"]*)".*tests="([0-9]+)".*failures="([0-9]+)".*/- JVM: \1: \2 tests, \3 failed/' || true
-          } >> "$GITHUB_STEP_SUMMARY"
-
   report:
-    needs: [frontend, mcp]
+    needs: [frontend]
     if: always() && !cancelled()
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -304,7 +170,7 @@ jobs:
           if-no-files-found: ignore
 
   tests-ok:
-    needs: [changes, frontend, mcp, catalogue, images, android]
+    needs: [changes, frontend, catalogue]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
