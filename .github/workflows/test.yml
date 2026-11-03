@@ -28,6 +28,7 @@ concurrency:
 env:
   NODE_VERSION: 22
   FORCE_COLOR: '1'
+  TZ: UTC
 
 jobs:
   changes:
