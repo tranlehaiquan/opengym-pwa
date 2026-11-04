@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile: build the PWA with Node + pnpm, then serve with Nginx.
-FROM --platform=$BUILDPLATFORM node:22-alpine AS build
+FROM --platform=$BUILDPLATFORM node:26-alpine AS build
 
 WORKDIR /app
 
