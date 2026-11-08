@@ -46,7 +46,7 @@ export interface UIState {
   sheets: SheetItem[];
   toastMsg: string;
   toastAction: ToastAction | null;
-  swipeHint: { idx: number; i: number; id: string } | null;
+  swipeHint: { idx: number; i: number; id: string | number } | null;
   setFlash: { idx: number; i: number; id: string } | null;
   timer: RestTimer | null;
   work: WorkTimer | null;

@@ -692,8 +692,11 @@ describe('the gate has something real to read', () => {
     // Matched loosely on purpose: boot() fetches through loadConfig() rather than inlining the
     // call, so what matters is that the field exists and that something writes /api/config
     // into it — not the spelling of the expression that does it.
-    const { readFileSync } = await import('node:fs')
-    const src = readFileSync(new URL('../store/useStore.js', import.meta.url), 'utf8')
+    const { readFileSync, existsSync } = await import('node:fs')
+    const storeUrl = existsSync(new URL('../store/useStore.ts', import.meta.url))
+      ? new URL('../store/useStore.ts', import.meta.url)
+      : new URL('../store/useStore.js', import.meta.url)
+    const src = readFileSync(storeUrl, 'utf8')
     expect(src).toMatch(/\bconfig:\s*\{/)
     expect(src).toMatch(/loadConfig\(\)/)
   })

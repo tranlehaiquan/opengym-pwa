@@ -4,7 +4,7 @@
  * without having a working one to put there: its cache is what a home-screen app reopened
  * without a network comes back from. So an install that did not get the shell fails, and the
  * previous build's cache is swept only once this build's shell is in its own. */
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { beforeEach, describe, expect, it } from 'vitest'
 
 class FakeCache {
@@ -180,7 +180,10 @@ describe('sw.js re-registers a rotated push subscription with the page\'s device
   // The same cache name and key on both sides, read out of the two files, so the page and the
   // worker cannot drift apart without this failing.
   const constant = (src, name) => src.match(new RegExp('const ' + name + " = '([^']+)'"))?.[1]
-  const pageSrc = readFileSync(new URL('./push.js', import.meta.url), 'utf8')
+  const pushUrl = existsSync(new URL('./push.ts', import.meta.url))
+    ? new URL('./push.ts', import.meta.url)
+    : new URL('./push.js', import.meta.url)
+  const pageSrc = readFileSync(pushUrl, 'utf8')
   const swSrc = readFileSync(new URL('../../public/sw.js', import.meta.url), 'utf8')
   const DEVICE_CACHE = constant(pageSrc, 'DEVICE_CACHE')
   const DEVICE_URL = constant(pageSrc, 'DEVICE_URL')

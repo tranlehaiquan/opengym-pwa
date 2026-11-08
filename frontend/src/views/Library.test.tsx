@@ -89,12 +89,12 @@ describe('Library favourites', () => {
 // #290 took the title-casing off every translated name; the packs stored lower-case then read
 // lower-case down the whole list. Only German's own casing is left alone.
 describe('Library exercise-name casing per language', () => {
-  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
   afterEach(() => _setLangState('en', {}, null, null))
 
   for (const lang of EXERCISE_NAME_LANGS) {
     it(`${lang}: every translated row is ${CASED_NAME_LANGS.includes(lang) ? 'left in its own casing' : 'title-cased'}`, () => {
-      const pack = packs[`../exercise-names/${lang}.js`]
+      const pack = packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
       _setLangState(lang, {}, null, pack)
       // Starred so they render on the first page: a partial pack may not cover the first rows.
       mocks.S.favEx = Object.keys(pack).slice(0, 3)

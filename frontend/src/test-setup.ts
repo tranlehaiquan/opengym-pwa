@@ -16,7 +16,7 @@ import { Storage } from 'happy-dom'
 // never sees the calls.
 const usable = s => s != null && typeof s === 'object' && 'getItem' in s && 'setItem' in s
 
-export function ensureWebStorage(g = globalThis) {
+export function ensureWebStorage(g: any = globalThis) {
   // Only a DOM environment; a node-environment test that wants storage brings its own stub.
   if (typeof g.document === 'undefined') return
   for (const key of ['localStorage', 'sessionStorage']) {

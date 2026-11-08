@@ -35,3 +35,34 @@ declare module 'jsqr' {
   ): { data: string } | null;
 }
 
+
+
+declare module '@capacitor/core' {
+
+  export const registerPlugin: any;
+  export const Capacitor: any;
+}
+
+declare module '@capacitor/app' {
+  export const App: any;
+}
+
+declare module '@capacitor/filesystem' {
+  export const Filesystem: any;
+  export const Directory: any;
+  export const Encoding: any;
+}
+
+declare module '@capacitor/local-notifications' {
+  export const LocalNotifications: any;
+}
+
+declare module '@capacitor-mlkit/barcode-scanning' {
+  export const BarcodeScanner: any;
+}
+
+declare module '@aparajita/capacitor-secure-storage' {
+  export const SecureStoragePlugin: any;
+}
+
+

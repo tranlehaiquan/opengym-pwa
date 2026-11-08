@@ -238,7 +238,7 @@ export const useUI = create<UIState>((set, get) => ({
 
   openSheet(render, { kind = 'sheet', locked = false, wide = false } = {}) {
     const id = uid()
-    set(s => ({ sheets: [...s.sheets, { id, render, kind, locked, wide }] }))
+    set(s => ({ sheets: [...s.sheets, { id, render, kind: kind as 'sheet' | 'center', locked, wide }] }))
     const close = () => get().closeSheet(id)
     return { id, close, lock: (v: boolean) => set(s => ({ sheets: s.sheets.map(x => x.id === id ? { ...x, locked: v } : x) })) }
   },

@@ -3,9 +3,12 @@
 // a static import of the core here would pass every behavioural test and still ship the
 // catalogue, the prompts and the validator to a phone that never asked for a Coach.
 import { describe, it, expect } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 
-const src = readFileSync(new URL('./CoachSetup.jsx', import.meta.url), 'utf8')
+const setupUrl = existsSync(new URL('./CoachSetup.tsx', import.meta.url))
+  ? new URL('./CoachSetup.tsx', import.meta.url)
+  : new URL('./CoachSetup.jsx', import.meta.url)
+const src = readFileSync(setupUrl, 'utf8')
 const statics = [...src.matchAll(/^import .* from '([^']+)'/gm)].map(m => m[1])
 
 describe('CoachSetup keeps the core out until a mode is chosen', () => {
@@ -18,7 +21,10 @@ describe('CoachSetup keeps the core out until a mode is chosen', () => {
     expect(src).toMatch(/import\('\.\.\/lib\/coach-local\.js'\)/)
   })
   it('the categories module carries no catalogue', () => {
-    const cat = readFileSync(new URL('../coach/core/categories.js', import.meta.url), 'utf8')
+    const catUrl = existsSync(new URL('../coach/core/categories.ts', import.meta.url))
+      ? new URL('../coach/core/categories.ts', import.meta.url)
+      : new URL('../coach/core/categories.js', import.meta.url)
+    const cat = readFileSync(catUrl, 'utf8')
     expect(cat).not.toMatch(/^import /m)
     expect(cat.length).toBeLessThan(1500)
   })

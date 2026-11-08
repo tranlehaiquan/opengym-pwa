@@ -3,13 +3,15 @@
 // reads the source: the block right after the chevron is the title, at marginInlineStart 12,
 // with no font size of its own.
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 const PAGES = ['Admin', 'History', 'CheckIn', 'Measurements', 'CoachSetup', 'Muscles', 'ProgressPhotos', 'StructuralBalance']
 
 const titleAfterBack = name => {
-  const src = readFileSync(fileURLToPath(new URL(`./${name}.jsx`, import.meta.url)), 'utf8')
+  const tsxPath = fileURLToPath(new URL(`./${name}.tsx`, import.meta.url))
+  const jsxPath = fileURLToPath(new URL(`./${name}.jsx`, import.meta.url))
+  const src = readFileSync(existsSync(tsxPath) ? tsxPath : jsxPath, 'utf8')
   const at = src.indexOf('<Icon name="chevronLeft" /></button>')
   expect(at, `${name} has a back chevron`).toBeGreaterThan(-1)
   return src.slice(at, src.indexOf('</h1>', at))

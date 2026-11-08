@@ -94,7 +94,7 @@ describe('workoutText speed unit', () => {
 // Copy as text has no CSS to title-case with, so it capitalises itself wherever the screen does
 // (exerciseNameClass): every translated pack stored lower-case, and not German's own casing.
 describe('workoutText exercise names per language', () => {
-  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
   const w = { id: 'w2', d: '2026-09-03', start: 0, end: 0, name: 'Push', vol: 0,
     entries: [{ id: '0025', target: { mode: 'reps' }, sets: [{ w: 60, r: 8, done: true }] }] }
   const nameLine = () => workoutText(w, { unit: 'kg', nameOf: e => exerciseNameFor(EXIDX[e.id]) }).split('\n\n')[1].split('\n')[0]
@@ -107,7 +107,7 @@ describe('workoutText exercise names per language', () => {
       pl: 'Wyciskanie Sztangi Na Ławce Płaskiej',
     }
     for (const lang of EXERCISE_NAME_LANGS) {
-      const pack = packs[`../exercise-names/${lang}.js`]
+      const pack = packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
       _setLangState(lang, {}, null, pack, false)
       // Packs in a script without case (ar, hi, th, zh...) come out exactly as written.
       const name = pack[w.entries[0].id]

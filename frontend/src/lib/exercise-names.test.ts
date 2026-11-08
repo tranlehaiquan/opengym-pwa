@@ -11,7 +11,7 @@ import {
 // catalogue/i18n/<lang>.json and may be partial (anything missing shows the English title), so
 // coverage and the language rules below are pinned on the 1,324 entries of the v1.3 catalogue,
 // whose names were curated and reviewed. Names for the v1.4 additions only have to be well formed.
-const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
+const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
 const EXIDX = new Map(EXDB.map(exercise => [exercise.id, exercise]))
 const LEGACY_IDS = new Set(V13_IDS)
 const legacy = EXDB.filter(exercise => LEGACY_IDS.has(exercise.id))
@@ -163,7 +163,7 @@ const LANGS = {
 test('every curated language still ships a name pack, and every pack is enabled', () => {
   for (const lang of Object.keys(LANGS)) expect(EXERCISE_NAME_LANGS, lang).toContain(lang)
   for (const path of Object.keys(packs)) {
-    const lang = path.match(/([^/]+)\.js$/)[1]
+    const lang = path.match(/([^/]+)\.[jt]s$/)[1]
     expect(EXERCISE_NAME_LANGS, path).toContain(lang)
   }
 })
@@ -185,7 +185,7 @@ test('the movement rule fires in both directions', () => {
 
 for (const lang of EXERCISE_NAME_LANGS) {
   describe(`${lang} exercise names`, () => {
-    const pack = packs[`../exercise-names/${lang}.js`]
+    const pack = packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
     const rules = LANGS[lang] || {}
     // The rules hold the curated names: the v1.3 ones, for German only the reviewed stage.
     const v13 = (rules.covers || legacy).filter(exercise => pack[exercise.id])
@@ -289,7 +289,7 @@ for (const lang of EXERCISE_NAME_LANGS) {
 // de-CH derives from the German pack by replacing ß with ss, so the base pack must be the ß one
 // or the Swiss locale derives nothing. A name written with ss there would pass every other test.
 test('de-CH derives the Swiss spelling from the German pack', () => {
-  const de = packs['../exercise-names/de.js']
+  const de = packs['../exercise-names/de.ts'] || packs['../exercise-names/de.js']
   const withSharpS = Object.entries(de).filter(([, name]) => name.includes('ß'))
   expect(withSharpS.length).toBeGreaterThan(0)
   const swiss = derivePack('de-CH', de)

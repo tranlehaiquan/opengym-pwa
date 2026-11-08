@@ -152,8 +152,8 @@ describe('exerciseNameClass', () => {
 // new pack that is lower-case gets the casing without anyone remembering to add it, and one with
 // real casing fails here until it is listed.
 describe('title-casing per exercise-name pack', () => {
-  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
-  const packFor = lang => packs[`../exercise-names/${lang}.js`]
+  const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
+  const packFor = lang => packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
   // Share of names that start with a lower-case letter. A lower-case pack still has a few that
   // start upper-case for a reason of their own (EZ-rudas, L-sit, SkiErg), German has none.
   // Share of names that do not start with a capital. A script without case (Arabic, Devanagari,
@@ -191,8 +191,8 @@ describe('title-casing per exercise-name pack', () => {
 // only) came with the Italian and French packs, but they have to hold for every pack the app
 // ships — German too, which covers only part of the catalogue.
 describe('English-name switches with every exercise-name pack', () => {
-  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
-  const packFor = lang => packs[`../exercise-names/${lang}.js`]
+  const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
+  const packFor = lang => packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
 
   it('ships a pack for every language listed as having one', () => {
     for (const lang of EXERCISE_NAME_LANGS) expect(packFor(lang), lang).toBeTruthy()

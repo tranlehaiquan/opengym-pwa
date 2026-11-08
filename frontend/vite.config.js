@@ -115,8 +115,9 @@ const safari15Compat = {
 // resolve harmlessly without runtime or build failures on web builds.
 const stubCapacitor = {
   name: 'stub-capacitor',
+  enforce: 'pre',
   resolveId(id) {
-    if (id.startsWith('@capacitor/') || id.startsWith('@capacitor-mlkit/') || id.startsWith('@aparajita/')) {
+    if (id === '@capacitor/core' || id.startsWith('@capacitor/') || id.startsWith('@capacitor-mlkit/') || id.startsWith('@aparajita/')) {
       return '\0' + id
     }
   },
@@ -161,5 +162,5 @@ export default defineConfig({
   // lower, scripts/check-bundle-syntax.mjs catches (its test builds the bundle).
   build: { chunkSizeWarningLimit: 1500, target: ['safari15', 'chrome100', 'firefox100', 'edge100'] },
   // Gives happy-dom tests a working localStorage on Node 24+ (#733).
-  test: { setupFiles: ['./src/test-setup.js'] }
+  test: { setupFiles: ['./src/test-setup.ts'] }
 })

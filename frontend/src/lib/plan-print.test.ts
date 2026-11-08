@@ -59,13 +59,14 @@ describe('planPrintHTML', () => {
 // The printout title-cases a name with the same class the screen uses (exerciseNameClass): the
 // lower-case packs get it back, German keeps its own casing.
 describe('planPrintHTML exercise-name casing per language', () => {
-  const packs = import.meta.glob('../exercise-names/*.js', { eager: true, import: 'default' })
+  const packs = import.meta.glob('../exercise-names/*.[jt]s', { eager: true, import: 'default' })
   const nameClass = html => html.match(/<div class="ex-n ([^"]*)">/)?.[1].trim()
   afterEach(() => _setLangState('en', {}, null, null))
 
   for (const lang of EXERCISE_NAME_LANGS) {
     it(`${lang}: ${CASED_NAME_LANGS.includes(lang) ? 'no title-casing on the translated name' : 'the translated name is title-cased'}`, () => {
-      _setLangState(lang, {}, null, packs[`../exercise-names/${lang}.js`])
+      const pack = packs[`../exercise-names/${lang}.ts`] || packs[`../exercise-names/${lang}.js`]
+      _setLangState(lang, {}, null, pack)
       const html = planPrintHTML(S, 'Ana', { routineId: 'pull' })
       expect(nameClass(html)).toBe(CASED_NAME_LANGS.includes(lang) ? '' : 'capitalize')
       expect(html).toContain('.ex-n.capitalize { text-transform: capitalize; }')

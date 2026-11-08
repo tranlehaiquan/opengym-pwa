@@ -3,7 +3,7 @@
 // module is not in the main bundle, and it is not even fetched until a theme is on.
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -21,7 +21,7 @@ const files = (dir, out = []) => {
   for (const n of readdirSync(dir)) {
     const p = join(dir, n)
     if (statSync(p).isDirectory()) { if (n !== 'locales' && n !== 'node_modules') files(p, out) }
-    else if (/\.(js|jsx)$/.test(n) && !/\.test\./.test(n)) out.push(p)
+    else if (/\.(js|jsx|ts|tsx)$/.test(n) && !/\.test\./.test(n)) out.push(p)
   }
   return out
 }
@@ -29,14 +29,16 @@ const files = (dir, out = []) => {
 describe('no theme code in the main bundle', () => {
   it('only components/Seasonal.jsx names a theme module, and only through import()', () => {
     const naming = files(SRC).filter(f => !f.includes(join('src', 'seasonal') + '/')).filter(f => /seasonal\/halloween/.test(readFileSync(f, 'utf8')))
-    expect(naming.map(f => relative(SRC, f))).toEqual([join('components', 'Seasonal.jsx')])
-    const text = readFileSync(join(SRC, 'components', 'Seasonal.jsx'), 'utf8')
+    const seasonalRel = existsSync(join(SRC, 'components', 'Seasonal.tsx')) ? join('components', 'Seasonal.tsx') : join('components', 'Seasonal.jsx')
+    expect(naming.map(f => relative(SRC, f))).toEqual([seasonalRel])
+    const text = readFileSync(join(SRC, seasonalRel), 'utf8')
     expect(text).not.toMatch(/^\s*import[^(]*seasonal\/halloween/m)
-    expect(text).toMatch(/import\('\.\.\/seasonal\/halloween\.jsx'\)/)
+    expect(text).toMatch(/import\('\.\.\/seasonal\/halloween\.[jt]sx?'\)/)
   })
   it('the theme\'s stylesheet comes with its module, not with index.css', () => {
     expect(readFileSync(join(SRC, 'index.css'), 'utf8')).not.toMatch(/hw-|halloween/)
-    expect(readFileSync(join(SRC, 'seasonal', 'halloween.jsx'), 'utf8')).toMatch(/import '\.\/halloween\.css'/)
+    const hwPath = existsSync(join(SRC, 'seasonal', 'halloween.tsx')) ? join(SRC, 'seasonal', 'halloween.tsx') : join(SRC, 'seasonal', 'halloween.jsx')
+    expect(readFileSync(hwPath, 'utf8')).toMatch(/import '\.\/halloween\.css'/)
   })
 })
 

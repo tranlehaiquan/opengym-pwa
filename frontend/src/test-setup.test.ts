@@ -6,7 +6,7 @@ import { ensureWebStorage } from './test-setup.js'
 // undefined, or one whose getter throws.
 describe('ensureWebStorage', () => {
   it('replaces a localStorage that is undefined or throws, and leaves a working one alone', () => {
-    const g = { document: {} }
+    const g: any = { document: {} }
     Object.defineProperty(g, 'localStorage', { get() { return undefined }, configurable: true })
     Object.defineProperty(g, 'sessionStorage', { get() { throw new TypeError('invalid localStorage location') }, configurable: true })
     ensureWebStorage(g)
@@ -21,7 +21,7 @@ describe('ensureWebStorage', () => {
     expect(g.localStorage).toBe(kept)
   })
   it('does nothing outside a DOM environment', () => {
-    const g = {}
+    const g: any = {}
     ensureWebStorage(g)
     expect('localStorage' in g).toBe(false)
   })

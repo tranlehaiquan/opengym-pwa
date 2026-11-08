@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { readFileSync } from 'node:fs'
+import { readFileSync, existsSync } from 'node:fs'
 import { bestWeightForEntry, metricModeForEntry, metricRowsForEntry } from '../lib/history.js'
 
-const source = readFileSync(new URL('./Stats.jsx', import.meta.url), 'utf8')
-const uiSource = readFileSync(new URL('../components/ui.jsx', import.meta.url), 'utf8')
+const statsUrl = existsSync(new URL('./Stats.tsx', import.meta.url))
+  ? new URL('./Stats.tsx', import.meta.url)
+  : new URL('./Stats.jsx', import.meta.url)
+const uiUrl = existsSync(new URL('../components/ui.tsx', import.meta.url))
+  ? new URL('../components/ui.tsx', import.meta.url)
+  : new URL('../components/ui.jsx', import.meta.url)
+const source = readFileSync(statsUrl, 'utf8')
+const uiSource = readFileSync(uiUrl, 'utf8')
 const cssSource = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
 
 describe('Stats mixed-entry metric contract', () => {
