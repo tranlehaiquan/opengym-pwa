@@ -1,10 +1,9 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
-import { createHash } from 'node:crypto'
+import { readFileSync, existsSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { lazyAssets, stampSw } from './scripts/sw-stamp.mjs'
+import { VitePWA } from 'vite-plugin-pwa'
 
 const backend = process.env.API_TARGET || 'http://127.0.0.1:3000'
 // The API refuses a state-changing request that a browser sent from anywhere other than its own
@@ -53,28 +52,19 @@ const umami = {
   }
 }
 
-// The service worker's cache is named after the build (public/sw.js carries a `__BUILD__`
-// placeholder): a deploy is then a new worker with its own cache, and the previous build's
-// shell and chunks are dropped on activate instead of piling up under one fixed name. The
-// stamp is a hash of the built index.html — it changes exactly when the bundle does.
-// The directory is the one this build wrote to (`--outDir` included), not a fixed ./dist/: a
-// build into a private outDir left `__BUILD__` unstamped in its sw.js.
-// The worker also gets the build's code that loads on demand (`__LAZY__`, scripts/sw-stamp.mjs),
-// so it is there offline before the page has ever needed it.
-let outDir = fileURLToPath(new URL('./dist/', import.meta.url))
-let lazy = []
-const swStamp = {
-  name: 'opengym-sw-stamp',
-  apply: 'build',
-  configResolved(config) { outDir = resolve(config.root, config.build.outDir) },
-  generateBundle(_, bundle) { lazy = lazyAssets(bundle) },
-  closeBundle() {
-    const html = join(outDir, 'index.html'), sw = join(outDir, 'sw.js')
-    if (!existsSync(html) || !existsSync(sw)) return
-    const stamp = createHash('sha256').update(readFileSync(html)).digest('hex').slice(0, 10)
-    writeFileSync(sw, stampSw(readFileSync(sw, 'utf8'), { stamp, lazy }))
+const pwaPlugin = VitePWA({
+  strategies: 'injectManifest',
+  srcDir: 'src',
+  filename: 'sw.ts',
+  injectRegister: false,
+  manifest: false,
+  injectManifest: {
+    injectionPoint: 'self.__WB_MANIFEST',
+    globPatterns: ['**/*.{js,css,html,ico,png,svg,webmanifest}'],
+    globIgnores: ['**/exercise-media/**', '**/node_modules/**'],
+    maximumFileSizeToCacheInBytes: 5 * 1024 * 1024
   }
-}
+})
 
 // The phone flavour says so in its index.html. A web build that ran into the same dist/ between
 // the mobile build and `cap sync` (two builds in one worktree) shipped the web shell inside an
@@ -142,7 +132,7 @@ const stubCapacitor = {
 
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
-  plugins: [react(), stubCapacitor, umami, flavor, swStamp, catalogueMedia, safari15Compat],
+  plugins: [react(), stubCapacitor, umami, flavor, pwaPlugin, catalogueMedia, safari15Compat],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
