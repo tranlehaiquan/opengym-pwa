@@ -72,6 +72,10 @@ jobs:
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -101,12 +105,16 @@ jobs:
         working-directory: frontend
         run: >
           pnpm exec vitest run
+          --shard=${{ matrix.shard }}
           --reporter=default --reporter=json --outputFile.json=test-results.json
           --reporter=junit --outputFile.junit=junit.xml
-          --coverage --coverage.provider=v8 --coverage.include='src/**'
+          --coverage --coverage.provider=v8 --coverage.include='src/**/*.{js,jsx,ts,tsx}'
           --coverage.reporter=json-summary --coverage.reporter=text-summary
       - name: Web build
         run: pnpm run build
+        working-directory: frontend
+      - name: Check bundle syntax
+        run: node scripts/check-bundle-syntax.mjs dist
         working-directory: frontend
       - name: Bundle size
         run: node scripts/bundle-size.mjs --out bundle-size.json
@@ -123,18 +131,18 @@ jobs:
       - name: Stats
         if: always()
         run: >
-          node scripts/ci/test-report.mjs --label Frontend --root frontend
+          node scripts/ci/test-report.mjs --label "Frontend (${{ matrix.shard }})" --root frontend
           --vitest frontend/test-results.json --coverage frontend/coverage/coverage-summary.json
-          --bundle frontend/bundle-size.json --out stats/frontend.json
+          --bundle frontend/bundle-size.json --out stats/frontend-shard-${{ strategy.job-index }}.json
       - name: Test audit
         if: always()
         run: node scripts/ci/test-audit.mjs frontend/src frontend/scripts mcp/test > /dev/null
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         if: always()
         with:
-          name: stats-frontend
+          name: stats-frontend-shard-${{ strategy.job-index }}
           path: |
-            stats/frontend.json
+            stats/frontend-shard-${{ strategy.job-index }}.json
             frontend/junit.xml
           retention-days: 30
           if-no-files-found: ignore

@@ -1,15 +1,8 @@
-/* check-bundle-syntax.mjs: 1.4.2 never got past the splash on iOS 15.5 to 16.3 because one chunk
- * held a regex lookbehind. The fixtures are what Safari 15.5 cannot run, and the last test builds
- * the real web bundle (a few seconds) and holds every chunk of it to that. */
+/* check-bundle-syntax.test.mjs: 1.4.2 never got past the splash on iOS 15.5 to 16.3 because one chunk
+ * held a regex lookbehind. The fixtures are what Safari 15.5 cannot run.
+ * (Full built bundle check is executed against dist/ post-build in CI via check-bundle-syntax.mjs). */
 import { describe, expect, it } from 'vitest'
-import { execFileSync } from 'node:child_process'
-import { mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { checkBundle, regexFeatures, unsupportedSyntax } from './check-bundle-syntax.mjs'
-
-const frontend = join(dirname(fileURLToPath(import.meta.url)), '..')
+import { regexFeatures, unsupportedSyntax } from './check-bundle-syntax.mjs'
 
 describe('regexFeatures', () => {
   it('finds a lookbehind, either kind', () => {
@@ -46,15 +39,4 @@ describe('unsupportedSyntax', () => {
   it('says so when a chunk does not parse at all', () => {
     expect(unsupportedSyntax('const = 1', 'assets/x.js')[0]).toMatch(/^assets\/x\.js: does not parse/)
   })
-})
-
-describe('the built web bundle', () => {
-  it('has nothing Safari 15.5, the iOS deployment target, cannot run', () => {
-    const out = mkdtempSync(join(tmpdir(), 'og-bundle-syntax-'))
-    try {
-      execFileSync(process.execPath, [join(frontend, 'node_modules/vite/bin/vite.js'), 'build', '--outDir', out, '--emptyOutDir', '--logLevel', 'error'],
-        { cwd: frontend, stdio: 'pipe', env: { ...process.env, NODE_ENV: 'production' } })
-      expect(checkBundle(out)).toEqual([])
-    } finally { rmSync(out, { recursive: true, force: true }) }
-  }, 180_000)
 })

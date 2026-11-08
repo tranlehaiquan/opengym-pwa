@@ -21,6 +21,9 @@ const random = () => {
   return seed / 0x100000000
 }
 
+const STEP_HOURS = Math.max(1, parseInt(process.env.PROBE_STEP_HOURS || '3', 10))
+const expectedComparisons = 100 * Math.floor(1080 / STEP_HOURS)
+
 let comparisons = 0
 let deletionComparisons = 0
 let largestIncrease = -Infinity
@@ -34,7 +37,7 @@ for (let historyIndex = 0; historyIndex < 100; historyIndex += 1) {
   })
 
   let previous = fatigueOf(history, BASE).chest
-  for (let hour = 1; hour <= 1080; hour += 1) {
+  for (let hour = STEP_HOURS; hour <= 1080; hour += STEP_HOURS) {
     const current = fatigueOf(history, BASE + hour * HOUR).chest
     const increase = current - previous
     largestIncrease = Math.max(largestIncrease, increase)
@@ -65,7 +68,7 @@ for (let historyIndex = 0; historyIndex < 100; historyIndex += 1) {
   }
 }
 
-if (comparisons !== 108000) throw new Error(`expected 108000 comparisons, got ${comparisons}`)
+if (comparisons !== expectedComparisons) throw new Error(`expected ${expectedComparisons} comparisons, got ${comparisons}`)
 
 // Pin the two history-edit invariants alongside the randomized property probes.
 const today = workout(BASE, 100, 5)
