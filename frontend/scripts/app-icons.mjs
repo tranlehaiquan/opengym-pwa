@@ -20,11 +20,17 @@ import { deflateSync } from 'node:zlib'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { APP_ICON_VARIANTS } from '../src/lib/app-icon-variants.js'
-
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
 export const PREVIEW = 112
 export const IOS_SIZE = 1024
+
+import { createServer } from 'vite'
+const _server = await createServer({
+  root: ROOT, logLevel: 'error',
+  server: { middlewareMode: true, hmr: false, ws: false }
+})
+export const { APP_ICON_VARIANTS } = await _server.ssrLoadModule('/src/lib/app-icon-variants.ts')
+await _server.close()
 
 /** The glyph's rectangles, in the 512 grid of resources/icon.svg: one source for every icon. */
 export function glyph(svg = readFileSync(join(ROOT, 'resources/icon.svg'), 'utf8')) {
@@ -234,9 +240,11 @@ export function files(rects = glyph()) {
     out.push([`public/app-icons/${v.id}.png`, () => draw(v, PREVIEW, { rects })])
     if (v.id === 'default') continue
     if (!v.art) out.push([`resources/icons/${v.id}.svg`, () => svgOf(v, rects)])
-    const set = `ios/App/App/Assets.xcassets/${v.ios}.appiconset`
-    out.push([`${set}/Contents.json`, () => iosContents])
-    out.push([`${set}/icon-1024.png`, () => draw(v, IOS_SIZE, { rects })])
+    if (existsSync(join(ROOT, 'ios'))) {
+      const set = `ios/App/App/Assets.xcassets/${v.ios}.appiconset`
+      out.push([`${set}/Contents.json`, () => iosContents])
+      out.push([`${set}/icon-1024.png`, () => draw(v, IOS_SIZE, { rects })])
+    }
   }
   return out
 }

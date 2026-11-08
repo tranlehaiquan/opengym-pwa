@@ -1,4 +1,15 @@
-import { FATIGUE_SCAN_MS, fatigueOf } from '../src/lib/recovery.js'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createServer } from 'vite'
+
+const root = join(dirname(fileURLToPath(import.meta.url)), '..')
+const server = await createServer({
+  root,
+  logLevel: 'error',
+  server: { middlewareMode: true, hmr: false, ws: false },
+})
+const { FATIGUE_SCAN_MS, fatigueOf } = await server.ssrLoadModule('/src/lib/recovery.ts')
+await server.close()
 
 const HOUR = 60 * 60 * 1000
 const DAY = 24 * HOUR

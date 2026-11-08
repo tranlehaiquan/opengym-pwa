@@ -33,7 +33,7 @@ const owner = arg('owner', 'Ana Duarte')
 mkdirSync(out, { recursive: true })
 
 const server = await createServer({
-  root, configFile: false, logLevel: 'error', appType: 'custom',
+  root, logLevel: 'error', appType: 'custom',
   server: { middlewareMode: true, hmr: false, ws: false },
   define: { __APP_VERSION__: JSON.stringify('dev') },
 })
