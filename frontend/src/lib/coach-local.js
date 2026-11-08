@@ -142,9 +142,12 @@ export function wallClock(now) {
 }
 const deviceZone = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || null } catch { return null } }
 // A read answer gives back the proposal it was asked beside, as the server does.
-export async function localResolve() {
+export async function localResolve(body = {}) {
   const d = await loadCoachDevice()
-  await saveCoachDevice({ pending: d.pending?.kind === 'ask' ? waitingProposal(d.pending.prev) : null })
+  const isDismissed = !!body?.dismissed
+  const isAsk = d.pending?.kind === 'ask' && (Array.isArray(body?.accepted) ? body.accepted.includes('ask') : !body?.accepted)
+  const nextPending = !isDismissed && isAsk ? waitingProposal(d.pending?.prev) : null
+  await saveCoachDevice({ pending: nextPending })
   return { ok: true }
 }
 export async function localForget() { job = null; lastError = null; await saveCoachDevice({ pending: null, daily: null, reviewedAt: null }); return { ok: true } }

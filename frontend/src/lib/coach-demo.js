@@ -213,7 +213,12 @@ export const demoAsk = (S, text) => start('ask', () => ({
   planHash: planHash(S), iteration: 1, prev: waitingProposal(pending),
   answer: t('This is the demo, so there is no AI model behind me. On your own server I answer questions like “{0}” with your plan, your last sessions and the workout you are doing right now.', String(text || '').slice(0, 80)),
 }))
-export const demoResolve = () => { pending = pending?.kind === 'ask' ? waitingProposal(pending.prev) : null; return { ok: true } }
+export const demoResolve = (body = {}) => {
+  const isDismissed = !!body?.dismissed
+  const isAsk = pending?.kind === 'ask' && (Array.isArray(body?.accepted) ? body.accepted.includes('ask') : !body?.accepted)
+  pending = !isDismissed && isAsk ? waitingProposal(pending?.prev) : null
+  return { ok: true }
+}
 export const demoDisclosure = () => ({
   provider: 'demo', providerLabel: t('the configured AI provider'),
   categories: ['plan', 'training', 'bodyweight', 'profile', 'prefs'], version: 1

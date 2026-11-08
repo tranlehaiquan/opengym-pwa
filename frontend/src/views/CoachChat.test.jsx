@@ -6,6 +6,8 @@ import CoachChat from './CoachChat.jsx'
 import { CONSENT_VERSION } from '../lib/coach.js'   // the consent a fixture grants is the current one, whatever its number
 import { effectiveRoutine } from '../lib/history.js'
 import { todayISO } from '../lib/format.js'
+import { resolvePending } from '../lib/coach-api.js'
+import { confirmSheet } from '../sheets.jsx'
 
 // The chat is where a plan is imported. These pin that the Import button applies the pending
 // plan through the store, writes the decision into the thread, and leaves today startable.
@@ -238,5 +240,55 @@ describe('the Coach chat', () => {
     expect(byText(/^Compare$/)).toBeFalsy()
     await mount(null, null, { community: true })
     expect(byText(/^Compare$/)).toBeTruthy()
+  })
+
+  it('dismisses debrief card cleanly on "Got it" without leaving duplicate card alongside recap', async () => {
+    await mount({ id: 'd1', kind: 'debrief', workout: { id: 'w1', name: 'Push', d: '2026-08-29' }, summary: 'ok', score: 8, highlights: ['a'], watch: [], nextTime: ['b'] })
+    expect(container.querySelector('.deb-ring')).toBeTruthy()
+    expect(byText(/Got it/)).toBeTruthy()
+
+    await click(byText(/Got it/))
+
+    expect(resolvePending).toHaveBeenCalledWith({ accepted: ['debrief'] })
+    expect(mocks.refresh).toHaveBeenCalled()
+    expect(mocks.S.coach.chat.at(-1).kind).toBe('debrief')
+    expect(container.querySelector('.recap')).toBeTruthy()
+    expect(container.querySelector('.deb-ring')).toBeNull()
+    expect(byText(/Got it/)).toBeFalsy()
+  })
+
+  it('dismisses plan card cleanly on "Import this plan" without leaving pending card', async () => {
+    await mount({ id: 'p1', kind: 'create', bundle: bundle(everyDay) })
+    expect(byText(/Import this plan/)).toBeTruthy()
+    expect(container.querySelector('.pcard')).toBeTruthy()
+
+    await click(byText(/Import this plan/))
+
+    expect(resolvePending).toHaveBeenCalledWith({ accepted: ['plan'] })
+    expect(mocks.refresh).toHaveBeenCalled()
+    expect(mocks.S.coach.chat.at(-1).kind).toBe('applied')
+    expect(byText(/Import this plan/)).toBeFalsy()
+    expect(container.querySelector('.pcard-tabs')).toBeNull()
+  })
+
+  it('dismisses plan card cleanly on "Discard" via confirmSheet', async () => {
+    await mount({ id: 'p1', kind: 'create', bundle: bundle(everyDay) })
+    const discardBtn = byText(/^Discard$/)
+    expect(discardBtn).toBeTruthy()
+
+    await click(discardBtn)
+    expect(confirmSheet).toHaveBeenCalled()
+    const confirmOpts = confirmSheet.mock.calls.at(-1)[0]
+    expect(confirmOpts.danger).toBe(true)
+
+    await act(async () => {
+      await confirmOpts.onConfirm()
+    })
+
+    expect(resolvePending).toHaveBeenCalledWith({ dismissed: true })
+    expect(mocks.refresh).toHaveBeenCalled()
+    expect(mocks.S.coach.chat.at(-1).kind).toBe('dismissed')
+    expect(byText(/Import this plan/)).toBeFalsy()
+    expect(container.querySelector('.pcard-tabs')).toBeNull()
   })
 })

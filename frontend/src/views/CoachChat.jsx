@@ -51,7 +51,16 @@ export default function CoachChat() {
   const storeReady = useStore(s => s.ready)
   const toast = useUI(s => s.toast)
   const openSheet = useUI(s => s.openSheet)
-  const { job, pending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  const { job, pending: rawPending, cap, loading, lastError, last, refresh, maxMessageLen } = useCoachStatus(true)
+  const [dismissedPid, setDismissedPid] = useState(null)
+  const pending = rawPending && rawPending.id !== dismissedPid ? rawPending : null
+
+  useEffect(() => {
+    if (!rawPending || (rawPending.id && dismissedPid && rawPending.id !== dismissedPid)) {
+      setDismissedPid(null)
+    }
+  }, [rawPending?.id, dismissedPid])
+
   const [text, setText] = useState('')
   // The message box opened into a tall editor (components/ChatInput.jsx); closed again on send.
   const [expanded, setExpanded] = useState(false)
@@ -232,10 +241,10 @@ export default function CoachChat() {
       {job && <Typing S={S} kind={job.kind} coachLocal={coachLocal} config={config} />}
 
       {pending && !job && pending.kind !== 'ask' && (pending.kind === 'create'
-        ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} />
+        ? <PlanCard p={pending} S={S} update={update} toast={toast} nav={nav} refresh={refresh} onDismiss={setDismissedPid} />
         : pending.kind === 'debrief'
-          ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />
-          : <ReviewCard p={pending} S={S} update={update} toast={toast} refresh={refresh} />)}
+          ? <DebriefCard p={pending} S={S} update={update} toast={toast} refresh={refresh} onDismiss={setDismissedPid} />
+          : <ReviewCard p={pending} S={S} update={update} toast={toast} refresh={refresh} onDismiss={setDismissedPid} />)}
 
       <div ref={endRef} />
     </div>
@@ -323,14 +332,14 @@ function Typing({ S, kind, coachLocal, config }) {
 
 /* ---------------------------------- the plan ---------------------------------- */
 
-function PlanCard({ p, S, update, toast, nav, refresh }) {
+function PlanCard({ p, S, update, toast, nav, refresh, onDismiss }) {
   const b = p.bundle
   const [tab, setTab] = useState(0)
   const [schedule, setSchedule] = useState(true)
   const r = b.routines[Math.min(tab, b.routines.length - 1)]
   const weekDays = useMemo(() => new Set(Object.keys(b.week || {}).map(Number)), [b])
 
-  const accept = () => {
+  const accept = async () => {
     try {
       let n = 0
       update(s => {
@@ -342,7 +351,8 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
           ? t('Imported! {0} routines are in your plan and your week is set. See you at the next session.', n)
           : t('Imported! {0} routines are in your plan. Your week is unchanged; schedule them whenever you like.', n) })
       })
-      resolvePending({ accepted: ['plan'] }).catch(() => {})
+      onDismiss?.(p.id)
+      await resolvePending({ accepted: ['plan'] }).catch(() => {})
       toast(t('Your plan is live'))
       refresh()
     } catch (e) { toast(e.message || t('That proposal can’t be read.')) }
@@ -350,9 +360,10 @@ function PlanCard({ p, S, update, toast, nav, refresh }) {
   const discard = () => confirmSheet({
     title: t('Discard this plan?'), message: t('Nothing is saved, and you can ask again anytime.'),
     confirmText: t('Discard'), danger: true,
-    onConfirm: () => {
+    onConfirm: async () => {
+      onDismiss?.(p.id)
       update(s => { const ref = recordDismissal(s, p); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Discarded. Tell me what was off and I will build a different one.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
+      await resolvePending({ dismissed: true }).catch(() => {})
       refresh()
     }
   })
@@ -407,13 +418,13 @@ const RoutineBlock = ({ r, unit, speedUnit }) => <div className="pcard-rt">
 
 /* ---------------------------------- a review ---------------------------------- */
 
-function ReviewCard({ p, S, update, toast, refresh }) {
+function ReviewCard({ p, S, update, toast, refresh, onDismiss }) {
   const marked = useMemo(() => markStale(p, S), [p, S])
   const usable = applicable(marked)
   const [accepted, setAccepted] = useState(() => new Set(usable.map(c => c.id)))
   const toggle = id => setAccepted(s => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n })
 
-  const apply = () => {
+  const apply = async () => {
     const ids = [...accepted].filter(id => usable.some(c => c.id === id))
     if (!ids.length) { discard(); return }
     try {
@@ -421,7 +432,8 @@ function ReviewCard({ p, S, update, toast, refresh }) {
         const res = applyChangeSet(s, marked, ids)
         appendChat(s, { role: 'coach', kind: 'applied', ref: res.logId, text: tn('Applied {0} change to your plan.', 'Applied {0} changes to your plan.', ids.length) })
       })
-      resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
+      onDismiss?.(p.id)
+      await resolvePending({ accepted: ids, rejected: marked.changes.filter(c => !ids.includes(c.id)).map(c => c.id) }).catch(() => {})
       toast(tn('{0} change applied', '{0} changes applied', ids.length))
       refresh()
     } catch (e) { toast(e.message || t('Could not apply those changes')) }
@@ -429,9 +441,10 @@ function ReviewCard({ p, S, update, toast, refresh }) {
   const discard = () => confirmSheet({
     title: t('Dismiss these suggestions?'), message: t('Nothing changes, and the Coach will remember you turned these down.'),
     confirmText: t('Dismiss'), danger: true,
-    onConfirm: () => {
+    onConfirm: async () => {
+      onDismiss?.(p.id)
       update(s => { const ref = recordDismissal(s, marked); appendChat(s, { role: 'coach', kind: 'dismissed', ref, text: t('Got it. I won’t suggest these again without new evidence.') }) })
-      resolvePending({ dismissed: true }).catch(() => {})
+      await resolvePending({ dismissed: true }).catch(() => {})
       refresh()
     }
   })
@@ -589,10 +602,11 @@ const DebriefList = ({ icon, tint, title, items }) => !!items?.length && <div cl
 </div>
 const scoreWord = s => s >= 9 ? t('Excellent session') : s >= 7 ? t('Good session') : s >= 5 ? t('Solid session') : t('Tough session')
 
-function DebriefCard({ p, S, update, toast, refresh }) {
-  const done = () => {
+function DebriefCard({ p, S, update, toast, refresh, onDismiss }) {
+  const done = async () => {
+    onDismiss?.(p.id)
     update(s => { const ref = recordDebrief(s, p); appendChat(s, { role: 'coach', kind: 'debrief', ref, text: '' }) })
-    resolvePending({ accepted: ['debrief'] }).catch(() => {})
+    await resolvePending({ accepted: ['debrief'] }).catch(() => {})
     toast(t('Kept in your Coach history'))
     refresh()
   }

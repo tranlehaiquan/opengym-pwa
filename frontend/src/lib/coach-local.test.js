@@ -250,6 +250,23 @@ describe('the Coach on a phone with its own key', () => {
     expect(device.data.pending).toBeNull()
   })
 
+  it('localResolve drops stale or dismissed pending.prev references', async () => {
+    // 1. Dismissing an ask does not restore its prev proposal
+    device.data.pending = { id: 'ask-1', kind: 'ask', prev: { id: 'rev-1', kind: 'review', changes: [] } }
+    await local.localResolve({ dismissed: true })
+    expect(device.data.pending).toBeNull()
+
+    // 2. An ask with an expired prev drops the expired proposal
+    device.data.pending = { id: 'ask-2', kind: 'ask', prev: { id: 'rev-2', kind: 'review', changes: [], expiresAt: Date.now() - 1000 } }
+    await local.localResolve({ accepted: ['ask'] })
+    expect(device.data.pending).toBeNull()
+
+    // 3. Resolving a proposal with accepted body clears pending to null
+    device.data.pending = { id: 'p-1', kind: 'create', bundle: {} }
+    await local.localResolve({ accepted: ['plan'] })
+    expect(device.data.pending).toBeNull()
+  })
+
   it('creates a plan from an intake, and refines it against the previous bundle', async () => {
     const plan = { coach_contract: 1, opengym_plan: 1, name: 'P', summary: 's', basedOn: 'b', week: { 1: 'r1', 3: 'r2', 5: 'r1' },
       routines: [
