@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && node ../scripts/catalogue/stage-media.mjs dist",
-    "build:mobile": "VITE_MOBILE=1 vite build && node ../scripts/catalogue/stage-media.mjs dist && cap sync && node scripts/check-mobile-bundle.mjs",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
     "typecheck:watch": "tsc -b --noEmit --watch",
@@ -20,14 +19,6 @@
     "@ai-sdk/anthropic": "^4.0.91",
     "@ai-sdk/google": "^4.0.107",
     "@ai-sdk/openai": "^4.0.104",
-    "@aparajita/capacitor-secure-storage": "^8.0.1",
-    "@capacitor-mlkit/barcode-scanning": "^8.2.1",
-    "@capacitor/app": "^8.0.0",
-    "@capacitor/core": "^8.5.3",
-    "@capacitor/filesystem": "^8.1.5",
-    "@capacitor/local-notifications": "^8.0.0",
-    "@capacitor/share": "^8.0.0",
-    "@capacitor/splash-screen": "^8.0.2",
     "ai": "^7.0.156",
     "i18next": "^26.5.11",
     "jsqr": "^1.4.0",
@@ -40,9 +31,6 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@capacitor/android": "^8.5.3",
-    "@capacitor/cli": "^8.5.3",
-    "@capacitor/ios": "^8.5.3",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

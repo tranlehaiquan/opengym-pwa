@@ -7,10 +7,7 @@
 # cap on open PRs. Security advisories are unaffected by any of this; GitHub raises those
 # regardless of schedule.
 #
-# Only manifests that actually exist here are listed. Deliberately NOT covered:
-#   - gradle (frontend/android) and cocoapods (frontend/ios) — Capacitor generates those shells
-#     and pins the native versions to the @capacitor/* npm packages. Bumping them independently
-#     desyncs the two and breaks the mobile build; they follow the npm update instead.
+# Only manifests that actually exist here are listed.
 version: 2
 
 updates:

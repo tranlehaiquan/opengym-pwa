@@ -111,9 +111,37 @@ const safari15Compat = {
   }
 }
 
+// Stub removed legacy Capacitor packages so dynamic imports in dormant native modules
+// resolve harmlessly without runtime or build failures on web builds.
+const stubCapacitor = {
+  name: 'stub-capacitor',
+  resolveId(id) {
+    if (id.startsWith('@capacitor/') || id.startsWith('@capacitor-mlkit/') || id.startsWith('@aparajita/')) {
+      return '\0' + id
+    }
+  },
+  load(id) {
+    if (id.startsWith('\0@capacitor/') || id.startsWith('\0@capacitor-mlkit/') || id.startsWith('\0@aparajita/')) {
+      return `
+        export const Capacitor = { getPlatform: () => 'web', isNativePlatform: () => false };
+        export const registerPlugin = () => ({});
+        export const App = { addListener: () => ({ remove() {} }) };
+        export const Filesystem = { Directory: {}, Encoding: {} };
+        export const Directory = {};
+        export const Encoding = {};
+        export const LocalNotifications = {};
+        export const Share = {};
+        export const SplashScreen = {};
+        export const BarcodeScanner = {};
+        export default {};
+      `
+    }
+  }
+}
+
 export default defineConfig({
   define: { __APP_VERSION__: JSON.stringify(appVersion) },
-  plugins: [react(), umami, flavor, swStamp, catalogueMedia, safari15Compat],
+  plugins: [react(), stubCapacitor, umami, flavor, swStamp, catalogueMedia, safari15Compat],
   base: './',
   server: {
     // The Coach's core (payload, validator, prompts, HTTP adapters) lives in ../api/coach/core
